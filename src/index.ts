@@ -2,6 +2,8 @@ import express from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import authRoutes from './modules/auth/routes';
+import laundryRoutes from './modules/laundry/routes';
+import customerRoutes from './modules/customer/routes';
 
 const app = express();
 const port = 3000;
@@ -11,19 +13,21 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'My API',
+      title: 'Kasir Laundry Pro',
       version: '1.0.0',
-      description: 'A sample API with Swagger',
+      description: 'API Routes and schema details of Kasir Laundry Pro Services',
     },
   },
   apis: ['./src/modules/**/*.ts'], // Path to the API routes or files to be documented
 };
 
 const specs = swaggerJsdoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use('/auth', authRoutes);
+app.use('/v1/auth', authRoutes);
+app.use('/v1/laundry', laundryRoutes);
+app.use('/v1/customer', customerRoutes);
 
 // Start server
 app.listen(port, () => {

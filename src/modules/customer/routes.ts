@@ -2,6 +2,10 @@ import express from 'express';
 import { Customer } from './types';
 
 const router = express.Router();
+const customers: Customer[] = [
+  { id: '1', name: 'John Doe', phone_number: '123456789', email: 'john@example.com', address: '123 Main St', gender: "Laki-laki" },
+  { id: '2', name: 'Jane Smith', phone_number: '987654321', email: 'jane@example.com', address: '456 Elm St', gender:"Laki-laki" },
+];
 
 /**
  * @swagger
@@ -10,10 +14,32 @@ const router = express.Router();
  *   description: Customer management APIs
  */
 
-let customers: Customer[] = [
-  { id: '1', name: 'John Doe', phone_number: '123456789', email: 'john@example.com', address: '123 Main St' },
-  { id: '2', name: 'Jane Smith', phone_number: '987654321', email: 'jane@example.com', address: '456 Elm St' },
-];
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Customer:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Customer's name
+ *         phone_number:
+ *           type: string
+ *           description: Customer's phone number
+ *         email:
+ *           type: string
+ *           description: Customer's email address
+ *         address:
+ *           type: string
+ *           description: Customer's address
+ *         gender:
+ *           type: string
+ *           description: Customer's gender
+ *           enum:
+ *             - Laki-laki
+ *             - Perempuan
+ */
 
 /**
  * @swagger
@@ -21,8 +47,7 @@ let customers: Customer[] = [
  *   get:
  *     summary: Get all customers
  *     description: Retrieve a list of all customers
- *     tags: 
- *       - Customer 
+ *     tags: [Customer]
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -34,7 +59,7 @@ let customers: Customer[] = [
  *                 $ref: '#/components/schemas/Customer'
  */
 router.get('/', (req, res) => {
-  res.json(customers);
+  res.json(customers); // Replace with your logic to fetch customers
 });
 
 /**
@@ -43,8 +68,7 @@ router.get('/', (req, res) => {
  *   post:
  *     summary: Create a new customer
  *     description: Create a new customer record
- *     tags: 
- *       - Customer 
+ *     tags: [Customer]
  *     requestBody:
  *       required: true
  *       content:
@@ -62,16 +86,12 @@ router.get('/', (req, res) => {
  *         description: Bad request, invalid input
  */
 router.post('/', (req, res) => {
-  const { id, name, phone_number, email, address } = req.body;
+  const { name, phone_number, email, address, gender } = req.body;
 
-  if (!id || !name || !phone_number || !email || !address) {
+  if (!name || !phone_number || !email || !address || !gender) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
-
-  const newCustomer: Customer = { id, name, phone_number, email, address };
-  customers.push(newCustomer);
-
-  res.status(201).json(newCustomer);
+  res.status(201).json(null); // Replace with your logic to create a new customer
 });
 
 /**
@@ -80,8 +100,7 @@ router.post('/', (req, res) => {
  *   put:
  *     summary: Update a customer
  *     description: Update an existing customer record by ID
- *     tags: 
- *       - Customer 
+ *     tags: [Customer]
  *     parameters:
  *       - in: path
  *         name: id
@@ -108,28 +127,7 @@ router.post('/', (req, res) => {
  *         description: Customer not found
  */
 router.put('/:id', (req, res) => {
-  const customerId = req.params.id;
-  const { name, phone_number, email, address } = req.body;
-
-  const customerIndex = customers.findIndex(cust => cust.id === customerId);
-
-  if (customerIndex === -1) {
-    return res.status(404).json({ error: 'Customer not found' });
-  }
-
-  if (!name || !phone_number || !email || !address) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  customers[customerIndex] = {
-    id: customerId,
-    name,
-    phone_number,
-    email,
-    address,
-  };
-
-  res.json(customers[customerIndex]);
+  res.json(null); // Replace with your logic to update the customer
 });
 
 export default router;

@@ -1,5 +1,6 @@
 import express from 'express';
 import { Customer } from './types';
+import { GetCustomers, GetCustomersPG } from './controller';
 
 const router = express.Router();
 const customers: Customer[] = [
@@ -58,8 +59,14 @@ const customers: Customer[] = [
  *               items:
  *                 $ref: '#/components/schemas/Customer'
  */
-router.get('/', (req, res) => {
-  res.json(customers); // Replace with your logic to fetch customers
+router.get('/', async (req, res) => {
+  try {
+    const data = await GetCustomersPG();
+    res.json(data);
+  } catch (error) {
+    const err = error as Error; // Type assertion
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /**

@@ -1,4 +1,5 @@
-import express from 'express';
+import express, { Router } from 'express';
+import serverless from "serverless-http";
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import authRoutes from './modules/auth/routes';
@@ -10,6 +11,8 @@ import durationRoutes from './modules/duration/routes';
 
 const app = express();
 const port = 3000;
+
+const routerV1 = Router();
 
 // Swagger configuration
 const options = {
@@ -25,16 +28,19 @@ const options = {
 };
 
 const specs = swaggerJsdoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use('/v1/auth', authRoutes);
-app.use('/v1/laundry', laundryRoutes);
-app.use('/v1/customer', customerRoutes);
-app.use('/v1/service', serviceRoutes);
-app.use('/v1/duration', durationRoutes); 
+routerV1.use('/auth', authRoutes);
+routerV1.use('/laundry', laundryRoutes);
+routerV1.use('/customer', customerRoutes);
+routerV1.use('/service', serviceRoutes);
+routerV1.use('/duration', durationRoutes); 
+app.use("/api/v1/", routerV1);
 
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
+export const handler = serverless(app);

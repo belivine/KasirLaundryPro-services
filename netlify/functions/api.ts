@@ -28,8 +28,11 @@ const options = {
 };
 
 const specs = swaggerJsdoc(options);
-routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
+routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+    customCssUrl: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui.css',
+    customJs: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui-bundle.js',
+  }));
+  
 // Routes
 routerV1.use('/auth', authRoutes);
 routerV1.use('/laundry', laundryRoutes);

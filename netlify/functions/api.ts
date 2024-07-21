@@ -2,11 +2,11 @@ import express, { Router } from 'express';
 import serverless from "serverless-http";
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import authRoutes from './modules/auth/routes';
-import laundryRoutes from './modules/laundry/routes';
-import customerRoutes from './modules/customer/routes';
-import serviceRoutes from './modules/services/routes';
-import durationRoutes from './modules/duration/routes';
+import authRoutes from '../../src/modules/auth/routes';
+import laundryRoutes from '../../src/modules/laundry/routes';
+import customerRoutes from '../../src/modules/customer/routes';
+import serviceRoutes from '../../src/modules/services/routes';
+import durationRoutes from '../../src/modules/duration/routes';
 
 
 const app = express();

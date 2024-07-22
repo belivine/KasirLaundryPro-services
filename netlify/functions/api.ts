@@ -7,7 +7,7 @@ import laundryRoutes from '../../src/modules/laundry/routes';
 import customerRoutes from '../../src/modules/customer/routes';
 import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
-
+import path from 'path';
 
 const app = express();
 const port = 3000;
@@ -23,15 +23,28 @@ const options = {
       version: '1.0.0',
       description: 'API Routes and schema details of Kasir Laundry Pro Services',
     },
+    servers: [
+    {
+      url: 'https://kasirlaundrypro.netlify.app/api/', // Replace with your server URL
+    },
+  ],
   },
   apis: ['./src/modules/**/*.ts'], // Path to the API routes or files to be documented
 };
 
 const specs = swaggerJsdoc(options);
-routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
-    customCssUrl: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui.css',
-    customJs: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui-bundle.js',
-  }));
+routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.get('/api-docs/swagger-ui.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules', 'swagger-ui-dist', 'swagger-ui.css'));
+});
+
+app.get('/api-docs/swagger-ui-bundle.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules', 'swagger-ui-dist', 'swagger-ui-bundle.js'));
+});
+
+app.get('/api-docs/swagger-ui-standalone-preset.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules', 'swagger-ui-dist', 'swagger-ui-standalone-preset.js'));
+});
   
 // Routes
 routerV1.use('/auth', authRoutes);

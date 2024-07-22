@@ -8,7 +8,6 @@ import customerRoutes from './modules/customer/routes';
 import serviceRoutes from './modules/services/routes';
 import durationRoutes from './modules/duration/routes';
 
-
 const app = express();
 const port = 3000;
 
@@ -28,10 +27,7 @@ const options = {
 };
 
 const specs = swaggerJsdoc(options);
-routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
-  customCssUrl: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui.css',
-  customJs: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui-bundle.js',
-}));
+routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
 routerV1.use('/auth', authRoutes);

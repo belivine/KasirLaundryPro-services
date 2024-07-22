@@ -7,6 +7,7 @@ import laundryRoutes from './modules/laundry/routes';
 import customerRoutes from './modules/customer/routes';
 import serviceRoutes from './modules/services/routes';
 import durationRoutes from './modules/duration/routes';
+import path from "path";
 
 const app = express();
 const port = 3000;
@@ -22,13 +23,25 @@ const options = {
       version: '1.0.0',
       description: 'API Routes and schema details of Kasir Laundry Pro Services',
     },
+    servers: [
+    {
+      url: 'https://kasirlaundrypro.netlify.app/api/', // Replace with your server URL
+    },
+  ],
   },
   apis: ['./src/modules/**/*.ts'], // Path to the API routes or files to be documented
 };
 
 const specs = swaggerJsdoc(options);
-routerV1.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+const swaggerUIMiddleware = swaggerUi.setup(specs);
+const req: any = {};
+const res: any = { send: () => {} };
 
+// Make a mock request to the swagger ui middleware to initialize it.
+// Workaround issue: https://github.com/scottie1984/swagger-ui-express/issues/178
+swaggerUIMiddleware(req, res, () => {});
+routerV1.use('/docs', swaggerUi.serve, swaggerUIMiddleware);
+  
 // Routes
 routerV1.use('/auth', authRoutes);
 routerV1.use('/laundry', laundryRoutes);

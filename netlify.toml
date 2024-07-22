@@ -1,6 +1,5 @@
 [build]
-  functions = "src/" # Make sure this path matches your functions directory
-  publish = "build" # Adjust if you have a build directory
+  functions = "src"
 
 [functions]
   external_node_modules = ["express"]

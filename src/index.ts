@@ -7,7 +7,6 @@ import laundryRoutes from './modules/laundry/routes';
 import customerRoutes from './modules/customer/routes';
 import serviceRoutes from './modules/services/routes';
 import durationRoutes from './modules/duration/routes';
-import path from "path";
 
 const app = express();
 const port = 3000;

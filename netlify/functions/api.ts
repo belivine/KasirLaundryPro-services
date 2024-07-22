@@ -32,14 +32,14 @@ const options = {
 };
 
 const specs = swaggerJsdoc(options);
-const swaggerUIMiddleware = swaggerUi.setup(specs);
-const req: any = {};
-const res: any = { send: () => {} };
+// const swaggerUIMiddleware = swaggerUi.setup(specs);
+// const req: any = {};
+// const res: any = { send: () => {} };
 
-// Make a mock request to the swagger ui middleware to initialize it.
-// Workaround issue: https://github.com/scottie1984/swagger-ui-express/issues/178
-swaggerUIMiddleware(req, res, () => {});
-routerV1.use('/docs', swaggerUi.serve, swaggerUIMiddleware);
+// // Make a mock request to the swagger ui middleware to initialize it.
+// // Workaround issue: https://github.com/scottie1984/swagger-ui-express/issues/178
+// swaggerUIMiddleware(req, res, () => {});
+routerV1.use('/docs', swaggerUi.serve, swaggerUi.serve, swaggerUi.setup(specs));
   
 // Routes
 routerV1.use('/auth', authRoutes);

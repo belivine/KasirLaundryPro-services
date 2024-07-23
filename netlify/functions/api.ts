@@ -1,12 +1,12 @@
 import express, { Router } from 'express';
 import serverless from "serverless-http";
 import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
 import authRoutes from '../../src/modules/auth/routes';
 import laundryRoutes from '../../src/modules/laundry/routes';
 import customerRoutes from '../../src/modules/customer/routes';
 import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
+import { getAbsoluteFSPath } from 'swagger-ui-dist';
 
 const app = express();
 const port = 3000;
@@ -31,15 +31,47 @@ const options = {
   apis: ['./src/modules/**/*.ts'], // Path to the API routes or files to be documented
 };
 
-const specs = swaggerJsdoc(options);
-// const swaggerUIMiddleware = swaggerUi.setup(specs);
-// const req: any = {};
-// const res: any = { send: () => {} };
+const swaggerSpec = swaggerJsdoc(options);
+// Serve Swagger UI static assets
+const swaggerUiPath = getAbsoluteFSPath();
+app.use('/docs', express.static(swaggerUiPath));
 
-// // Make a mock request to the swagger ui middleware to initialize it.
-// // Workaround issue: https://github.com/scottie1984/swagger-ui-express/issues/178
-// swaggerUIMiddleware(req, res, () => {});
-routerV1.use('/docs', swaggerUi.serve, swaggerUi.serve, swaggerUi.setup(specs));
+// Serve Swagger JSON
+app.get('/swagger.json', (req, res) => {
+  res.json(swaggerSpec);
+});
+
+// Serve Swagger UI HTML
+app.get('/docs', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Swagger UI</title>
+        <link rel="stylesheet" href="/api-docs/swagger-ui.css">
+      </head>
+      <body>
+        <div id="swagger-ui"></div>
+        <script src="/api-docs/swagger-ui-bundle.js"></script>
+        <script src="/api-docs/swagger-ui-standalone-preset.js"></script>
+        <script>
+          SwaggerUIBundle({
+            url: '/swagger.json',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout"
+          });
+        </script>
+      </body>
+    </html>
+  `);
+});
   
 // Routes
 routerV1.use('/auth', authRoutes);

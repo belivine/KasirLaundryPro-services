@@ -34,15 +34,15 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 // Serve Swagger UI static assets
 const swaggerUiPath = getAbsoluteFSPath();
-app.use('/docs', express.static(swaggerUiPath));
+routerV1.use('/docs', express.static(swaggerUiPath));
 
 // Serve Swagger JSON
-app.get('/swagger.json', (req, res) => {
+routerV1.get('/swagger.json', (req, res) => {
   res.json(swaggerSpec);
 });
 
 // Serve Swagger UI HTML
-app.get('/docs', (req, res) => {
+routerV1.get('/docs', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="en">

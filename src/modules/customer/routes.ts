@@ -1,12 +1,8 @@
-import express from 'express';
-import { Customer } from './types';
-import { GetCustomers, GetCustomersPG } from './controller';
+import express, { Request, Response } from "express";
+import { addCustomer, GetCustomers, updateCustomer } from "./controller";
+import { customerSchema } from "./types";
 
 const router = express.Router();
-const customers: Customer[] = [
-  { id: '1', name: 'John Doe', phone_number: '123456789', email: 'john@example.com', address: '123 Main St', gender: "Laki-laki" },
-  { id: '2', name: 'Jane Smith', phone_number: '987654321', email: 'jane@example.com', address: '456 Elm St', gender:"Laki-laki" },
-];
 
 /**
  * @swagger
@@ -22,29 +18,78 @@ const customers: Customer[] = [
  *     Customer:
  *       type: object
  *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
  *         name:
  *           type: string
  *           description: Customer's name
+ *           example: "John Doe"
  *         phone_number:
  *           type: string
  *           description: Customer's phone number
+ *           example: "089121333242"
  *         email:
  *           type: string
  *           description: Customer's email address
+ *           example: "johndoe@gmail.com"
  *         address:
  *           type: string
  *           description: Customer's address
+ *           example: "Jl. Kaliurang 190222"
  *         gender:
  *           type: string
  *           description: Customer's gender
  *           enum:
  *             - Laki-laki
  *             - Perempuan
+ *           example: "Laki-laki"
+ *     CustomerRequestBody:
+ *       type: object
+ *       required:
+ *           - name
+ *           - gender
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Customer's name
+ *           example: "John Doe"
+ *         phone_number:
+ *           type: string
+ *           description: Customer's phone number
+ *           example: "089121333242"
+ *         email:
+ *           type: string
+ *           description: Customer's email address
+ *           example: "johndoe@gmail.com"
+ *         address:
+ *           type: string
+ *           description: Customer's address
+ *           example: "Jl. Kaliurang 190222"
+ *         gender:
+ *           type: string
+ *           description: Customer's gender
+ *           enum:
+ *             - Laki-laki
+ *             - Perempuan
+ *           example: "Laki-laki"
+ *     CustomerResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Customer created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/Customer'
  */
 
 /**
  * @swagger
- * /v1/customer:
+ * /api/customer:
  *   get:
  *     summary: Get all customers
  *     description: Retrieve a list of all customers
@@ -59,9 +104,9 @@ const customers: Customer[] = [
  *               items:
  *                 $ref: '#/components/schemas/Customer'
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const data = await GetCustomersPG();
+    const data = await GetCustomers();
     res.json(data);
   } catch (error) {
     const err = error as Error; // Type assertion
@@ -71,7 +116,7 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /v1/customer:
+ * /api/customer:
  *   post:
  *     summary: Create a new customer
  *     description: Create a new customer record
@@ -81,29 +126,57 @@ router.get('/', async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Customer'
+ *             $ref: '#/components/schemas/CustomerRequestBody'
  *     responses:
  *       201:
  *         description: Customer created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Customer'
+ *               $ref: '#/components/schemas/CustomerResponse'
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', (req, res) => {
-  const { name, phone_number, email, address, gender } = req.body;
-
-  if (!name || !phone_number || !email || !address || !gender) {
-    return res.status(400).json({ error: 'Missing required fields' });
+router.post("/", (req: Request, res: Response) => {
+  console.log(req.body);
+  
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({
+      errors: [{
+        type: 'body',
+        msg: 'Request body is missing or invalid',
+      }],
+    });
   }
-  res.status(201).json(null); // Replace with your logic to create a new customer
-});
+
+  const { error, value } = customerSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    return res.status(400).json({
+      errors: error.details.map(err => ({
+        type: 'field',
+        msg: err.message,
+        path: err.path[0],
+        location: 'body'
+      }))
+    });
+  }
+
+    const { name, phone_number, email, address, gender } = req.body;
+    addCustomer({ name, phone_number, email, address, gender })
+      .then(() =>
+        res.status(201).json({ message: "Customer created successfully" })
+      )
+      .catch((error) => {
+        const err = error as Error;
+        res.status(500).json({ error: err.message });
+      });
+  }
+);
 
 /**
  * @swagger
- * /v1/customer/{id}:
+ * /api/customer/{id}:
  *   put:
  *     summary: Update a customer
  *     description: Update an existing customer record by ID
@@ -120,21 +193,44 @@ router.post('/', (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Customer'
+ *             $ref: '#/components/schemas/CustomerRequestBody'
  *     responses:
  *       200:
  *         description: Customer updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Customer'
+ *               $ref: '#/components/schemas/CustomerResponse'
  *       400:
  *         description: Bad request, invalid input
  *       404:
  *         description: Customer not found
  */
-router.put('/:id', (req, res) => {
-  res.json(null); // Replace with your logic to update the customer
-});
+router.put("/:id",(req: Request, res: Response) => {
+    const { error, value } = customerSchema.validate(req.body, { abortEarly: false });
+
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map(err => ({
+          type: 'field',
+          msg: err.message,
+          path: err.path[0],
+          location: 'body'
+        }))
+      });
+    }
+
+    const { id } = req.params;
+    const { name, phone_number, email, address, gender } = req.body;
+    updateCustomer(id, { name, phone_number, email, address, gender })
+      .then(() =>
+        res.status(200).json({ message: "Customer updated successfully" })
+      )
+      .catch((error) => {
+        const err = error as Error;
+        res.status(500).json({ error: err.message });
+      });
+  }
+);
 
 export default router;

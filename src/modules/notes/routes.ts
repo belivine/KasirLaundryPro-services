@@ -5,32 +5,32 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Rules
- *   description: Rules management APIs
+ *   name: Notes
+ *   description: Notes management APIs
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Rule:
+ *     Note:
  *       type: object
  *       properties:
  *         id:
  *           type: string
- *           description: Unique identifier for the rule
- *         rules:
+ *           description: Unique identifier for the note
+ *         content:
  *           type: string
- *           description: The rule content
+ *           description: The note content
  */
 
 /**
  * @swagger
- * /v1/rules:
+ * /v1/notes:
  *   get:
- *     summary: Get all rules
- *     description: Retrieve a list of all rules
- *     tags: [Rules]
+ *     summary: Get all notes
+ *     description: Retrieve a list of all notes
+ *     tags: [Notes]
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -39,20 +39,20 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Rule'
+ *                 $ref: '#/components/schemas/Note'
  */
 router.get('/', (req, res) => {
-  // Replace with your logic to fetch all rules
+  // Replace with your logic to fetch all notes
   res.json([]); // Example response, replace with actual data fetching
 });
 
 /**
  * @swagger
- * /v1/rules:
+ * /v1/notes:
  *   post:
- *     summary: Create a new rule
- *     description: Create a new rule record
- *     tags: [Rules]
+ *     summary: Create a new note
+ *     description: Create a new note record
+ *     tags: [Notes]
  *     requestBody:
  *       required: true
  *       content:
@@ -60,41 +60,41 @@ router.get('/', (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               rules:
+ *               content:
  *                 type: string
- *                 description: The rule content
+ *                 description: The note content
  *             required:
- *               - rules
+ *               - content
  *     responses:
  *       201:
- *         description: Rule created successfully
+ *         description: Note created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Rule'
+ *               $ref: '#/components/schemas/Note'
  *       400:
  *         description: Bad request, invalid input
  */
 router.post('/', (req, res) => {
-  const { rules } = req.body;
+  const { content } = req.body;
 
-  if (!rules) {
+  if (!content) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Replace with your logic to create a new rule
-  const newRule = { id: '1', rules }; // Example response, replace with actual creation logic
+  // Replace with your logic to create a new note
+  const newNote = { id: '1', content }; // Example response, replace with actual creation logic
 
-  res.status(201).json(newRule);
+  res.status(201).json(newNote);
 });
 
 /**
  * @swagger
- * /v1/rules:
+ * /v1/notes:
  *   put:
- *     summary: Update a rule
- *     description: Update an existing rule record
- *     tags: [Rules]
+ *     summary: Update a note
+ *     description: Update an existing note record
+ *     tags: [Notes]
  *     requestBody:
  *       required: true
  *       content:
@@ -104,34 +104,34 @@ router.post('/', (req, res) => {
  *             properties:
  *               id:
  *                 type: string
- *                 description: ID of the rule to update
- *               rules:
+ *                 description: ID of the note to update
+ *               content:
  *                 type: string
- *                 description: The updated rule content
+ *                 description: The updated note content
  *             required:
  *               - id
- *               - rules
+ *               - content
  *     responses:
  *       200:
- *         description: Rule updated successfully
+ *         description: Note updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Rule'
+ *               $ref: '#/components/schemas/Note'
  *       400:
  *         description: Bad request, invalid input
  */
 router.put('/', (req, res) => {
-  const { id, rules } = req.body;
+  const { id, content } = req.body;
 
-  if (!id || !rules) {
+  if (!id || !content) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Replace with your logic to update the rule
-  const updatedRule = { id, rules }; // Example response, replace with actual update logic
+  // Replace with your logic to update the note
+  const updatedNote = { id, content }; // Example response, replace with actual update logic
 
-  res.json(updatedRule);
+  res.json(updatedNote);
 });
 
 export default router;

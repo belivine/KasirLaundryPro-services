@@ -6,6 +6,7 @@ import laundryRoutes from '../../src/modules/laundry/routes';
 import customerRoutes from '../../src/modules/customer/routes';
 import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
+import notesRoutes from '../../src/modules/notes/routes';
 import { getAbsoluteFSPath } from 'swagger-ui-dist';
 
 const app = express();
@@ -77,6 +78,7 @@ routerV1.get('/docs', (req, res) => {
 routerV1.use('/auth', authRoutes);
 routerV1.use('/laundry', laundryRoutes);
 routerV1.use('/customer', customerRoutes);
+routerV1.use('/notes', notesRoutes);
 routerV1.use('/service', serviceRoutes);
 routerV1.use('/duration', durationRoutes); 
 app.use("/api/", routerV1);

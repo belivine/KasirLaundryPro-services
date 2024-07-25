@@ -138,8 +138,6 @@ router.get("/", async (req, res) => {
  *         description: Bad request, invalid input
  */
 router.post("/", (req: Request, res: Response) => {
-  console.log(req.body);
-  
   if (!req.body || typeof req.body !== 'object') {
     return res.status(400).json({
       errors: [{
@@ -162,15 +160,19 @@ router.post("/", (req: Request, res: Response) => {
     });
   }
 
-    const { name, phone_number, email, address, gender } = req.body;
-    addCustomer({ name, phone_number, email, address, gender })
-      .then(() =>
-        res.status(201).json({ message: "Customer created successfully" })
-      )
-      .catch((error) => {
-        const err = error as Error;
-        res.status(500).json({ error: err.message });
-      });
+  const { name, phone_number, email, address, gender } = req.body;
+  addCustomer({ name, phone_number, email, address, gender })
+    .then((newCustomer) =>
+      res.status(201).json({
+        status: "success",
+        message: "Customer created successfully",
+        data: newCustomer
+      })
+    )
+    .catch((error) => {
+      const err = error as Error;
+      res.status(500).json({ error: err.message });
+    });
   }
 );
 
@@ -220,16 +222,21 @@ router.put("/:id",(req: Request, res: Response) => {
       });
     }
 
-    const { id } = req.params;
-    const { name, phone_number, email, address, gender } = req.body;
-    updateCustomer(id, { name, phone_number, email, address, gender })
-      .then(() =>
-        res.status(200).json({ message: "Customer updated successfully" })
-      )
-      .catch((error) => {
-        const err = error as Error;
-        res.status(500).json({ error: err.message });
-      });
+  const { id } = req.params;
+  const { name, phone_number, email, address, gender } = req.body;
+
+  updateCustomer(id, { name, phone_number, email, address, gender })
+    .then((updatedCustomer) =>
+      res.status(200).json({
+        status: "success",
+        message: "Customer updated successfully",
+        data: updatedCustomer
+      })
+    )
+    .catch((error) => {
+      const err = error as Error;
+      res.status(500).json({ error: err.message });
+    });
   }
 );
 

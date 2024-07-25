@@ -1,5 +1,6 @@
 import express from 'express';
-import { Duration, DurationType } from './types';
+import { Duration, durationSchema, DurationType } from './types';
+import { getDurations, getDurationById, addDuration, updateDuration, deleteDuration } from './controller';
 
 const router = express.Router();
 
@@ -20,28 +21,56 @@ const router = express.Router();
  *         id:
  *           type: string
  *           description: Unique identifier for the duration
+ *           example: "1"
  *         name:
  *           type: string
  *           description: Name of the duration
+ *           example: "One Day"
  *         duration:
  *           type: number
  *           description: Duration value
+ *           example: 1
  *         type:
  *           type: string
  *           enum:
  *             - Hari
  *             - Jam
  *           description: Type of duration (Hari or Jam)
+ *           example: "Hari"
+ *     DurationRequestBody:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the duration
+ *           example: "One Day"
+ *         duration:
+ *           type: number
+ *           description: Duration value
+ *           example: 1
+ *         type:
+ *           type: string
+ *           enum:
+ *             - Hari
+ *             - Jam
+ *           description: Type of duration (Hari or Jam)
+ *           example: "Hari"
+ *     DurationResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Duration created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/Duration'
  */
-
-let durations: Duration[] = [
-  { id: '1', name: 'One Day', duration: 1, type: DurationType.Hari },
-  { id: '2', name: 'Two Hours', duration: 2, type: DurationType.Jam },
-];
 
 /**
  * @swagger
- * /v1/duration:
+ * /api/duration:
  *   get:
  *     summary: Get all durations
  *     description: Retrieve a list of all durations
@@ -56,13 +85,22 @@ let durations: Duration[] = [
  *               items:
  *                 $ref: '#/components/schemas/Duration'
  */
-router.get('/', (req, res) => {
-  res.json(durations);
+router.get('/', async (req, res) => {
+  try {
+    const durations = await getDurations();
+    res.json(durations);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 });
 
 /**
  * @swagger
- * /v1/duration:
+ * /api/duration:
  *   post:
  *     summary: Create a new duration
  *     description: Create a new duration record
@@ -72,33 +110,55 @@ router.get('/', (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Duration'
+ *             $ref: '#/components/schemas/DurationRequestBody'
  *     responses:
  *       201:
  *         description: Duration created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Duration'
+ *               $ref: '#/components/schemas/DurationResponse'
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', (req, res) => {
-  const { id, name, duration, type } = req.body;
-
-  if (!id || !name || !duration || !type) {
-    return res.status(400).json({ error: 'Missing required fields' });
+router.post('/', async (req, res) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({
+      errors: [{
+        type: 'body',
+        msg: 'Request body is missing or invalid',
+      }],
+    });
   }
 
-  const newDuration: Duration = { id, name, duration, type };
-  durations.push(newDuration);
+  const { error, value } = durationSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({
+      errors: error.details.map(err => ({
+        type: 'field',
+        msg: err.message,
+        path: err.path[0],
+        location: 'body'
+      }))
+    });
+  }
 
-  res.status(201).json(newDuration);
+  const { id, name, duration, type } = req.body;
+  try {
+    const newDuration = await addDuration({ name, duration, type });
+    res.status(201).json({ status: 'success', message: 'Duration created successfully', data: newDuration });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 });
 
 /**
  * @swagger
- * /v1/duration/{id}:
+ * /api/duration/{id}:
  *   put:
  *     summary: Update a duration
  *     description: Update an existing duration record by ID
@@ -115,41 +175,62 @@ router.post('/', (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Duration'
+ *             $ref: '#/components/schemas/DurationRequestBody'
  *     responses:
  *       200:
  *         description: Duration updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Duration'
+ *               $ref: '#/components/schemas/DurationResponse'
  *       400:
  *         description: Bad request, invalid input
  *       404:
  *         description: Duration not found
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({
+      errors: [{
+        type: 'body',
+        msg: 'Request body is missing or invalid',
+      }],
+    });
+  }
+
+  const { error, value } = durationSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({
+      errors: error.details.map(err => ({
+        type: 'field',
+        msg: err.message,
+        path: err.path[0],
+        location: 'body'
+      }))
+    });
+  }
+
+  const { id, name, duration, type } = req.body;
   const durationId = req.params.id;
-  const { name, duration, type } = req.body;
-
-  const durationIndex = durations.findIndex(duration => duration.id === durationId);
-
-  if (durationIndex === -1) {
-    return res.status(404).json({ error: 'Duration not found' });
+  try {
+    const updatedDuration = await updateDuration(durationId, { name, duration, type });
+    res.json({ status: 'success', message: 'Duration updated successfully', data: updatedDuration });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        res.status(404).json({ error: 'Duration not found' });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
-
-  if (!name || !duration || !type) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  durations[durationIndex] = { id: durationId, name, duration, type };
-
-  res.json(durations[durationIndex]);
 });
 
 /**
  * @swagger
- * /v1/duration/{id}:
+ * /api/duration/{id}:
  *   delete:
  *     summary: Delete a duration
  *     description: Delete a duration record by ID
@@ -162,28 +243,46 @@ router.put('/:id', (req, res) => {
  *           type: string
  *         description: ID of the duration to delete
  *     responses:
- *       204:
+ *       200:
  *         description: Duration deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 message:
+ *                   type: string
+ *                   example: "Duration deleted successfully"
  *       404:
  *         description: Duration not found
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const durationId = req.params.id;
-
-  const durationIndex = durations.findIndex(duration => duration.id === durationId);
-
-  if (durationIndex === -1) {
-    return res.status(404).json({ error: 'Duration not found' });
+  try {
+    await deleteDuration(durationId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Duration deleted successfully'
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        res.status(404).json({ error: 'Duration not found' });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
-
-  durations.splice(durationIndex, 1);
-
-  res.status(204).send();
 });
 
 /**
  * @swagger
- * /v1/duration/{id}:
+ * /api/duration/{id}:
  *   get:
  *     summary: Get a duration by ID
  *     description: Retrieve a duration by its ID
@@ -205,15 +304,22 @@ router.delete('/:id', (req, res) => {
  *       404:
  *         description: Duration not found
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const durationId = req.params.id;
-  const duration = durations.find(duration => duration.id === durationId);
 
-  if (!duration) {
-    return res.status(404).json({ error: 'Duration not found' });
+  try {
+    const duration = await getDurationById(durationId);
+    if (!duration) {
+      return res.status(404).json({ error: 'Duration not found' });
+    }
+    res.json(duration);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
-
-  res.json(duration);
 });
 
 export default router;

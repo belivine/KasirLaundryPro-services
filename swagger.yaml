@@ -1,1291 +1,851 @@
-{
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Kasir Laundry Pro",
-    "version": "1.0.0",
-    "description": "API Routes and schema details of Kasir Laundry Pro Services"
-  },
-  "servers": [
-    {
-      "url": "https://kasirlaundrypro.netlify.app/api/"
-    }
-  ],
-  "paths": {
-    "/auth/login": {
-      "post": {
-        "summary": "Logs in a user",
-        "description": "Logs in a user with credentials",
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "User's email address"
-                  },
-                  "password": {
-                    "type": "string",
-                    "description": "User's password"
-                  }
-                },
-                "required": [
-                  "email",
-                  "password"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful login",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized, invalid credentials"
-          }
-        }
-      }
-    },
-    "/auth/signup": {
-      "post": {
-        "summary": "Signs up a new user",
-        "description": "Creates a new user account",
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "User's email address"
-                  },
-                  "phone_number": {
-                    "type": "string",
-                    "description": "User's phone number"
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "User's name"
-                  }
-                },
-                "required": [
-                  "email",
-                  "phone_number",
-                  "name"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "User successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/auth/change-password": {
-      "post": {
-        "summary": "Changes the user's password",
-        "description": "Allows a user to change their password",
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "old_password": {
-                    "type": "string",
-                    "description": "User's current password"
-                  },
-                  "new_password": {
-                    "type": "string",
-                    "description": "User's new password"
-                  }
-                },
-                "required": [
-                  "old_password",
-                  "new_password"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Password successfully changed"
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "401": {
-            "description": "Unauthorized, invalid credentials"
-          }
-        }
-      }
-    },
-    "/customer": {
-      "get": {
-        "summary": "Get all customers",
-        "description": "Retrieve a list of all customers",
-        "tags": [
-          "Customer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Customer"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new customer",
-        "description": "Create a new customer record",
-        "tags": [
-          "Customer"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Customer created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/customer/{id}": {
-      "put": {
-        "summary": "Update a customer",
-        "description": "Update an existing customer record by ID",
-        "tags": [
-          "Customer"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the customer to update"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Customer updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "404": {
-            "description": "Customer not found"
-          }
-        }
-      }
-    },
-    "/duration": {
-      "get": {
-        "summary": "Get all durations",
-        "description": "Retrieve a list of all durations",
-        "tags": [
-          "Duration"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Duration"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new duration",
-        "description": "Create a new duration record",
-        "tags": [
-          "Duration"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DurationRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Duration created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DurationResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/duration/{id}": {
-      "put": {
-        "summary": "Update a duration",
-        "description": "Update an existing duration record by ID",
-        "tags": [
-          "Duration"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the duration to update"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DurationRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Duration updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DurationResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "404": {
-            "description": "Duration not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete a duration",
-        "description": "Delete a duration record by ID",
-        "tags": [
-          "Duration"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the duration to delete"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Duration deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "success"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Duration deleted successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Duration not found"
-          }
-        }
-      },
-      "get": {
-        "summary": "Get a duration by ID",
-        "description": "Retrieve a duration by its ID",
-        "tags": [
-          "Duration"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the duration to retrieve"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
+openapi: 3.0.0
+info:
+  title: Kasir Laundry Pro
+  version: 1.0.0
+  description: API Routes and schema details of Kasir Laundry Pro Services
+servers:
+- url: https://kasirlaundrypro.netlify.app/api/
+paths:
+  "/auth/login":
+    post:
+      summary: Logs in a user
+      description: Logs in a user with credentials
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: User's email address
+                password:
+                  type: string
+                  description: User's password
+              required:
+              - email
+              - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '401':
+          description: Unauthorized, invalid credentials
+  "/auth/signup":
+    post:
+      summary: Signs up a new user
+      description: Creates a new user account
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: User's email address
+                phone_number:
+                  type: string
+                  description: User's phone number
+                name:
+                  type: string
+                  description: User's name
+              required:
+              - email
+              - phone_number
+              - name
+      responses:
+        '201':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '400':
+          description: Bad request, invalid input
+  "/auth/change-password":
+    post:
+      summary: Changes the user's password
+      description: Allows a user to change their password
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                  description: User's current password
+                new_password:
+                  type: string
+                  description: User's new password
+              required:
+              - old_password
+              - new_password
+      responses:
+        '200':
+          description: Password successfully changed
+        '400':
+          description: Bad request, invalid input
+        '401':
+          description: Unauthorized, invalid credentials
+  "/customer":
+    get:
+      summary: Get all customers
+      description: Retrieve a list of all customers
+      tags:
+      - Customer
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Customer"
+    post:
+      summary: Create a new customer
+      description: Create a new customer record
+      tags:
+      - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CustomerRequestBody"
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerResponse"
+        '400':
+          description: Bad request, invalid input
+  "/customer/{id}":
+    put:
+      summary: Update a customer
+      description: Update an existing customer record by ID
+      tags:
+      - Customer
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the customer to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CustomerRequestBody"
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerResponse"
+        '400':
+          description: Bad request, invalid input
+        '404':
+          description: Customer not found
+  "/duration":
+    get:
+      summary: Get all durations
+      description: Retrieve a list of all durations
+      tags:
+      - Duration
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
                   "$ref": "#/components/schemas/Duration"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Duration not found"
-          }
-        }
-      }
-    },
-    "/laundry": {
-      "get": {
-        "summary": "Get all laundry items",
-        "description": "Retrieve a list of all laundry items",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "status",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Diproses",
-                "Selesai",
-                "Siap Diambil"
-              ]
-            },
-            "description": "Filter by laundry status"
-          },
-          {
-            "in": "query",
-            "name": "customer",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by customer UUID"
-          },
-          {
-            "in": "query",
-            "name": "date",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by date created"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Laundry"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new laundry item",
-        "description": "Create a new laundry record",
-        "tags": [
-          "Laundry"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+    post:
+      summary: Create a new duration
+      description: Create a new duration record
+      tags:
+      - Duration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DurationRequestBody"
+      responses:
+        '201':
+          description: Duration created successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DurationResponse"
+        '400':
+          description: Bad request, invalid input
+  "/duration/{id}":
+    put:
+      summary: Update a duration
+      description: Update an existing duration record by ID
+      tags:
+      - Duration
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the duration to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DurationRequestBody"
+      responses:
+        '200':
+          description: Duration updated successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DurationResponse"
+        '400':
+          description: Bad request, invalid input
+        '404':
+          description: Duration not found
+    delete:
+      summary: Delete a duration
+      description: Delete a duration record by ID
+      tags:
+      - Duration
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the duration to delete
+      responses:
+        '200':
+          description: Duration deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Duration deleted successfully
+        '404':
+          description: Duration not found
+    get:
+      summary: Get a duration by ID
+      description: Retrieve a duration by its ID
+      tags:
+      - Duration
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the duration to retrieve
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Duration"
+        '404':
+          description: Duration not found
+  "/laundry":
+    get:
+      summary: Get all laundry items
+      description: Retrieve a list of all laundry items
+      tags:
+      - Laundry
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - Diproses
+          - Selesai
+          - Siap Diambil
+        description: Filter by laundry status
+      - in: query
+        name: customer
+        schema:
+          type: string
+        description: Filter by customer UUID
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Filter by date created
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Laundry"
+    post:
+      summary: Create a new laundry item
+      description: Create a new laundry record
+      tags:
+      - Laundry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Laundry"
+      responses:
+        '201':
+          description: Laundry item created successfully
+          content:
+            application/json:
+              schema:
                 "$ref": "#/components/schemas/Laundry"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Laundry item created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/laundry/{id}": {
-      "put": {
-        "summary": "Update a laundry item",
-        "description": "Update an existing laundry record by ID",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the laundry item to update"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
+        '400':
+          description: Bad request, invalid input
+  "/laundry/{id}":
+    put:
+      summary: Update a laundry item
+      description: Update an existing laundry record by ID
+      tags:
+      - Laundry
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the laundry item to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Laundry"
+      responses:
+        '200':
+          description: Laundry item updated successfully
+          content:
+            application/json:
+              schema:
                 "$ref": "#/components/schemas/Laundry"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Laundry item updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "404": {
-            "description": "Laundry item not found"
-          }
-        }
-      },
-      "get": {
-        "summary": "Get laundry item details",
-        "description": "Retrieve details of a specific laundry item by ID",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the laundry item to retrieve"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Laundry item not found"
-          }
-        }
-      }
-    },
-    "/note": {
-      "get": {
-        "summary": "Get all notes",
-        "description": "Retrieve a list of all notes",
-        "tags": [
-          "Note"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Note"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new note",
-        "description": "Create a new note record",
-        "tags": [
-          "Note"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NoteRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Note created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/note/{id}": {
-      "put": {
-        "summary": "Update a note",
-        "description": "Update an existing note record",
-        "tags": [
-          "Note"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the note to update"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NoteRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Note updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoteResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/service": {
-      "get": {
-        "summary": "Get all services",
-        "description": "Retrieve a list of all services",
-        "tags": [
-          "Services"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Service"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new service",
-        "description": "Create a new service record",
-        "tags": [
-          "Services"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ServiceRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Service created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServiceResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/service/{id}": {
-      "put": {
-        "summary": "Update a service",
-        "description": "Update an existing service record",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ServiceRequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Service updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServiceResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "404": {
-            "description": "Service not found"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete a service",
-        "description": "Delete an existing service record",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Service deleted successfully"
-          },
-          "404": {
-            "description": "Service not found"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "User's name"
-          },
-          "email": {
-            "type": "string",
-            "description": "User's email address"
-          },
-          "oauth": {
-            "type": "boolean",
-            "description": "Whether the user is authenticated via OAuth"
-          },
-          "token": {
-            "type": "string",
-            "description": "Authentication token for the user"
-          },
-          "phone_number": {
-            "type": "string",
-            "description": "User's phone number"
-          },
-          "logo": {
-            "type": "string",
-            "description": "URL to the user's logo or profile picture"
-          },
-          "address": {
-            "type": "string",
-            "description": "User's address"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp of when the user was created"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp of when the user was last updated"
-          }
-        }
-      },
-      "Customer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
-          "name": {
-            "type": "string",
-            "description": "Customer's name",
-            "example": "John Doe"
-          },
-          "phone_number": {
-            "type": "string",
-            "description": "Customer's phone number",
-            "example": "089121333242"
-          },
-          "email": {
-            "type": "string",
-            "description": "Customer's email address",
-            "example": "johndoe@gmail.com"
-          },
-          "address": {
-            "type": "string",
-            "description": "Customer's address",
-            "example": "Jl. Kaliurang 190222"
-          },
-          "gender": {
-            "type": "string",
-            "description": "Customer's gender",
-            "enum": [
-              "Laki-laki",
-              "Perempuan"
-            ],
-            "example": "Laki-laki"
-          }
-        }
-      },
-      "CustomerRequestBody": {
-        "type": "object",
-        "required": [
-          "name",
-          "gender"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Customer's name",
-            "example": "John Doe"
-          },
-          "phone_number": {
-            "type": "string",
-            "description": "Customer's phone number",
-            "example": "089121333242"
-          },
-          "email": {
-            "type": "string",
-            "description": "Customer's email address",
-            "example": "johndoe@gmail.com"
-          },
-          "address": {
-            "type": "string",
-            "description": "Customer's address",
-            "example": "Jl. Kaliurang 190222"
-          },
-          "gender": {
-            "type": "string",
-            "description": "Customer's gender",
-            "enum": [
-              "Laki-laki",
-              "Perempuan"
-            ],
-            "example": "Laki-laki"
-          }
-        }
-      },
-      "CustomerResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "success"
-          },
-          "message": {
-            "type": "string",
-            "example": "Customer created successfully"
-          },
-          "data": {
-            "$ref": "#/components/schemas/Customer"
-          }
-        }
-      },
-      "Duration": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Duration ID",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the duration",
-            "example": "One Day"
-          },
-          "duration": {
-            "type": "number",
-            "description": "Duration in minutes",
-            "example": 30
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "Hari",
-              "Jam"
-            ],
-            "description": "Type of duration (Hari or Jam)",
-            "example": "Hari"
-          },
-          "duration_name": {
-            "type": "string",
-            "description": "Name of the duration",
-            "example": "Half Hour"
-          },
-          "price": {
-            "type": "number",
-            "description": "Price for the duration",
-            "example": 10000
-          }
-        }
-      },
-      "DurationRequestBody": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the duration",
-            "example": "One Day"
-          },
-          "duration": {
-            "type": "number",
-            "description": "Duration value",
-            "example": 1
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "Hari",
-              "Jam"
-            ],
-            "description": "Type of duration (Hari or Jam)",
-            "example": "Hari"
-          }
-        }
-      },
-      "DurationResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "success"
-          },
-          "message": {
-            "type": "string",
-            "example": "Duration created successfully"
-          },
-          "data": {
+        '400':
+          description: Bad request, invalid input
+        '404':
+          description: Laundry item not found
+    get:
+      summary: Get laundry item details
+      description: Retrieve details of a specific laundry item by ID
+      tags:
+      - Laundry
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the laundry item to retrieve
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Laundry"
+        '404':
+          description: Laundry item not found
+  "/note":
+    get:
+      summary: Get all notes
+      description: Retrieve a list of all notes
+      tags:
+      - Note
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Note"
+    post:
+      summary: Create a new note
+      description: Create a new note record
+      tags:
+      - Note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NoteRequestBody"
+      responses:
+        '201':
+          description: Note created successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NoteResponse"
+        '400':
+          description: Bad request, invalid input
+  "/note/{id}":
+    put:
+      summary: Update a note
+      description: Update an existing note record
+      tags:
+      - Note
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID of the note to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NoteRequestBody"
+      responses:
+        '200':
+          description: Note updated successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NoteResponse"
+        '400':
+          description: Bad request, invalid input
+  "/service":
+    get:
+      summary: Get all services
+      description: Retrieve a list of all services
+      tags:
+      - Services
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Service"
+    post:
+      summary: Create a new service
+      description: Create a new service record
+      tags:
+      - Services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceRequestBody"
+      responses:
+        '201':
+          description: Service created successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ServiceResponse"
+        '400':
+          description: Bad request, invalid input
+  "/service/{id}":
+    put:
+      summary: Update a service
+      description: Update an existing service record
+      tags:
+      - Services
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceRequestBody"
+      responses:
+        '200':
+          description: Service updated successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ServiceResponse"
+        '400':
+          description: Bad request, invalid input
+        '404':
+          description: Service not found
+    delete:
+      summary: Delete a service
+      description: Delete an existing service record
+      tags:
+      - Services
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Service deleted successfully
+        '404':
+          description: Service not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          description: User's name
+        email:
+          type: string
+          description: User's email address
+        oauth:
+          type: boolean
+          description: Whether the user is authenticated via OAuth
+        token:
+          type: string
+          description: Authentication token for the user
+        phone_number:
+          type: string
+          description: User's phone number
+        logo:
+          type: string
+          description: URL to the user's logo or profile picture
+        address:
+          type: string
+          description: User's address
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp of when the user was created
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of when the user was last updated
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          description: Customer's name
+          example: John Doe
+        phone_number:
+          type: string
+          description: Customer's phone number
+          example: '089121333242'
+        email:
+          type: string
+          description: Customer's email address
+          example: johndoe@gmail.com
+        address:
+          type: string
+          description: Customer's address
+          example: Jl. Kaliurang 190222
+        gender:
+          type: string
+          description: Customer's gender
+          enum:
+          - Laki-laki
+          - Perempuan
+          example: Laki-laki
+    CustomerRequestBody:
+      type: object
+      required:
+      - name
+      - gender
+      properties:
+        name:
+          type: string
+          description: Customer's name
+          example: John Doe
+        phone_number:
+          type: string
+          description: Customer's phone number
+          example: '089121333242'
+        email:
+          type: string
+          description: Customer's email address
+          example: johndoe@gmail.com
+        address:
+          type: string
+          description: Customer's address
+          example: Jl. Kaliurang 190222
+        gender:
+          type: string
+          description: Customer's gender
+          enum:
+          - Laki-laki
+          - Perempuan
+          example: Laki-laki
+    CustomerResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Customer created successfully
+        data:
+          "$ref": "#/components/schemas/Customer"
+    Duration:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Duration ID
+          example: '1'
+        name:
+          type: string
+          description: Name of the duration
+          example: One Day
+        duration:
+          type: number
+          description: Duration in minutes
+          example: 30
+        type:
+          type: string
+          enum:
+          - Hari
+          - Jam
+          description: Type of duration (Hari or Jam)
+          example: Hari
+        duration_name:
+          type: string
+          description: Name of the duration
+          example: Half Hour
+        price:
+          type: number
+          description: Price for the duration
+          example: 10000
+    DurationRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the duration
+          example: One Day
+        duration:
+          type: number
+          description: Duration value
+          example: 1
+        type:
+          type: string
+          enum:
+          - Hari
+          - Jam
+          description: Type of duration (Hari or Jam)
+          example: Hari
+    DurationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Duration created successfully
+        data:
+          "$ref": "#/components/schemas/Duration"
+    Laundry:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the laundry
+        customer:
+          type: string
+          description: Customer's UUID
+        duration:
+          type: string
+          description: Duration UUID
+        qty:
+          type: number
+          description: Quantity of laundry items
+        service:
+          type: string
+          description: Service UUID
+        status:
+          type: string
+          description: Status of the laundry
+          enum:
+          - Diproses
+          - Selesai
+          - Siap Diambil
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        notes:
+          type: string
+          description: The note content
+          example: This is a note.
+    NoteRequestBody:
+      type: object
+      required:
+      - content
+      properties:
+        notes:
+          type: string
+          description: The note content
+          example: This is a note.
+    NoteResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Note created successfully
+        data:
+          "$ref": "#/components/schemas/Note"
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the service
+          example: '1'
+        name:
+          type: string
+          description: Service name
+          example: Dry Cleaning
+        satuan:
+          type: string
+          description: Unit of measurement
+          example: kg
+        durations:
+          type: array
+          items:
             "$ref": "#/components/schemas/Duration"
-          }
-        }
-      },
-      "Laundry": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the laundry"
-          },
-          "customer": {
-            "type": "string",
-            "description": "Customer's UUID"
-          },
-          "duration": {
-            "type": "string",
-            "description": "Duration UUID"
-          },
-          "qty": {
-            "type": "number",
-            "description": "Quantity of laundry items"
-          },
-          "service": {
-            "type": "string",
-            "description": "Service UUID"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of the laundry",
-            "enum": [
-              "Diproses",
-              "Selesai",
-              "Siap Diambil"
-            ]
-          }
-        }
-      },
-      "Note": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
-          "notes": {
-            "type": "string",
-            "description": "The note content",
-            "example": "This is a note."
-          }
-        }
-      },
-      "NoteRequestBody": {
-        "type": "object",
-        "required": [
-          "content"
-        ],
-        "properties": {
-          "notes": {
-            "type": "string",
-            "description": "The note content",
-            "example": "This is a note."
-          }
-        }
-      },
-      "NoteResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "success"
-          },
-          "message": {
-            "type": "string",
-            "example": "Note created successfully"
-          },
-          "data": {
-            "$ref": "#/components/schemas/Note"
-          }
-        }
-      },
-      "Service": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the service",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "description": "Service name",
-            "example": "Dry Cleaning"
-          },
-          "satuan": {
-            "type": "string",
-            "description": "Unit of measurement",
-            "example": "kg"
-          },
-          "durations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Duration"
-            },
-            "example": [
-              {
-                "id": "1",
-                "duration": 30,
-                "duration_name": "Half Hour",
-                "price": 10000
-              },
-              {
-                "id": "2",
-                "duration": 60,
-                "duration_name": "One Hour",
-                "price": 15000
-              }
-            ]
-          }
-        }
-      },
-      "ServiceRequestBody": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Service name",
-            "example": "Dry Cleaning"
-          },
-          "satuan": {
-            "type": "string",
-            "description": "Unit of measurement",
-            "example": "kg"
-          },
-          "durations": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "duration": {
-                  "type": "string",
-                  "description": "UUID of the duration",
-                  "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "price": {
-                  "type": "number",
-                  "description": "Price for the duration",
-                  "example": 10000
-                }
-              }
-            },
-            "example": [
-              {
-                "duration": "550e8400-e29b-41d4-a716-446655440000",
-                "price": 10000
-              },
-              {
-                "duration": "550e8400-e29b-41d4-a716-446655440001",
-                "price": 15000
-              }
-            ]
-          }
-        },
-        "required": [
-          "name",
-          "satuan",
-          "durations"
-        ]
-      },
-      "ServiceResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "success"
-          },
-          "message": {
-            "type": "string",
-            "example": "Service created successfully"
-          },
-          "data": {
-            "$ref": "#/components/schemas/Service"
-          }
-        },
-        "example": {
-          "status": "success",
-          "message": "Service created successfully",
-          "data": {
-            "id": "1",
-            "name": "Dry Cleaning",
-            "satuan": "kg",
-            "durations": [
-              {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "duration": 30,
-                "duration_name": "Half Hour",
-                "price": 10000
-              },
-              {
-                "id": "550e8400-e29b-41d4-a716-446655440001",
-                "duration": 60,
-                "duration_name": "One Hour",
-                "price": 15000
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "tags": [
-    {
-      "name": "Auth",
-      "description": "Authentication APIs"
-    },
-    {
-      "name": "Customer",
-      "description": "Customer management APIs"
-    },
-    {
-      "name": "Duration",
-      "description": "Duration management APIs"
-    },
-    {
-      "name": "Laundry",
-      "description": "Laundry management APIs"
-    },
-    {
-      "name": "Note",
-      "description": "Notes management APIs"
-    },
-    {
-      "name": "Services",
-      "description": "Service management APIs"
-    }
-  ]
-}
+          example:
+          - id: '1'
+            duration: 30
+            duration_name: Half Hour
+            price: 10000
+          - id: '2'
+            duration: 60
+            duration_name: One Hour
+            price: 15000
+    ServiceRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Service name
+          example: Dry Cleaning
+        satuan:
+          type: string
+          description: Unit of measurement
+          example: kg
+        durations:
+          type: array
+          items:
+            type: object
+            properties:
+              duration:
+                type: string
+                description: UUID of the duration
+                example: 550e8400-e29b-41d4-a716-446655440000
+              price:
+                type: number
+                description: Price for the duration
+                example: 10000
+          example:
+          - duration: 550e8400-e29b-41d4-a716-446655440000
+            price: 10000
+          - duration: 550e8400-e29b-41d4-a716-446655440001
+            price: 15000
+      required:
+      - name
+      - satuan
+      - durations
+    ServiceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Service created successfully
+        data:
+          "$ref": "#/components/schemas/Service"
+      example:
+        status: success
+        message: Service created successfully
+        data:
+          id: '1'
+          name: Dry Cleaning
+          satuan: kg
+          durations:
+          - id: 550e8400-e29b-41d4-a716-446655440000
+            duration: 30
+            duration_name: Half Hour
+            price: 10000
+          - id: 550e8400-e29b-41d4-a716-446655440001
+            duration: 60
+            duration_name: One Hour
+            price: 15000
+tags:
+- name: Auth
+  description: Authentication APIs
+- name: Customer
+  description: Customer management APIs
+- name: Duration
+  description: Duration management APIs
+- name: Laundry
+  description: Laundry management APIs
+- name: Note
+  description: Notes management APIs
+- name: Services
+  description: Service management APIs

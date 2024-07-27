@@ -9,6 +9,7 @@ import durationRoutes from "./modules/duration/routes";
 import notesRoutes from "./modules/notes/routes";
 import swaggerUi from "swagger-ui-express";
 import cors from 'cors';
+import fs from "fs";
 
 const app = express();
 app.use(express.json()); 
@@ -42,6 +43,9 @@ const options = {
 };
 
 const swaggerSpec = swaggerJsdoc(options);
+// Convert swaggerSpec to a string
+const swaggerSpecString = JSON.stringify(swaggerSpec, null, 2);
+fs.writeFileSync('swagger.yaml', swaggerSpecString);
 
 // Serve Swagger UI
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

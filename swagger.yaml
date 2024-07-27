@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API Routes and schema details of Kasir Laundry Pro Services
 servers:
-- url: https://kasirlaundrypro.netlify.app/api/
+  - url: https://kasirlaundrypro.netlify.app/api/
 paths:
   "/auth/login":
     post:

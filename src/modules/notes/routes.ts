@@ -128,7 +128,7 @@ router.post("/", (req, res) => {
     .then((newCustomer) =>
       res.status(201).json({
         status: "success",
-        message: "Customer created successfully",
+        message: "Note created successfully",
         data: newCustomer,
       })
     )
@@ -189,7 +189,7 @@ router.put("/:id", (req, res) => {
     .then((updatedCustomer) =>
       res.status(200).json({
         status: "success",
-        message: "Customer updated successfully",
+        message: "Note updated successfully",
         data: updatedCustomer,
       })
     )

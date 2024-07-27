@@ -8,13 +8,15 @@ import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
 import notesRoutes from "./modules/notes/routes";
 import swaggerUi from "swagger-ui-express";
+import cors from 'cors';
+
 const app = express();
 app.use(express.json()); 
+app.use(cors());
 app.use((req, res, next) => {
   console.log('Middleware Check:', req.body); // Log to check if body is parsed
   next();
 });
-
 
 const port = 3000;
 
@@ -29,7 +31,12 @@ const options = {
       version: "1.0.0",
       description:
         "API Routes and schema details of Kasir Laundry Pro Services",
-    }
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000/api/', // Replace with your server URL
+      },
+    ]
   },
   apis: ["./src/modules/**/*.ts"], // Path to the API routes or files to be documented
 };
@@ -38,12 +45,15 @@ const swaggerSpec = swaggerJsdoc(options);
 
 // Serve Swagger UI
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+routerV1.use("/docs-json", (req, res) => {
+    res.json(swaggerSpec)
+})
 
 // Routes
 routerV1.use("/auth", authRoutes);
 routerV1.use("/laundry", laundryRoutes);
 routerV1.use("/customer", customerRoutes);
-routerV1.use("/notes", notesRoutes);
+routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);
 routerV1.use("/duration", durationRoutes);
 app.use("/api/", routerV1);

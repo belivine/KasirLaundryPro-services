@@ -1,13 +1,13 @@
 import express from 'express';
-import { Service } from './types';
-import { serviceItems } from './data'; // Importing the serviceItems array
+import { serviceSchema } from './types';
+import { addService, deleteService, getServices, updateService } from './controller';
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   name: Service
+ *   name: Services
  *   description: Service management APIs
  */
 
@@ -21,34 +21,131 @@ const router = express.Router();
  *         id:
  *           type: string
  *           description: Duration ID
+ *           example: "1"
+ *         duration:
+ *           type: number
+ *           description: Duration in minutes
+ *           example: 30
+ *         duration_name:
+ *           type: string
+ *           description: Name of the duration
+ *           example: "Half Hour"
  *         price:
  *           type: number
  *           description: Price for the duration
+ *           example: 10000
  *     Service:
  *       type: object
  *       properties:
  *         id:
  *           type: string
  *           description: Unique identifier for the service
+ *           example: "1"
  *         name:
  *           type: string
  *           description: Service name
+ *           example: "Dry Cleaning"
  *         satuan:
  *           type: string
  *           description: Unit of measurement
+ *           example: "kg"
  *         durations:
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/Duration'
+ *           example: [
+ *             {
+ *               id: "1",
+ *               duration: 30,
+ *               duration_name: "Half Hour",
+ *               price: 10000
+ *             },
+ *             {
+ *               id: "2",
+ *               duration: 60,
+ *               duration_name: "One Hour",
+ *               price: 15000
+ *             }
+ *           ]
+ *     ServiceRequestBody:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Service name
+ *           example: "Dry Cleaning"
+ *         satuan:
+ *           type: string
+ *           description: Unit of measurement
+ *           example: "kg"
+ *         durations:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               duration:
+ *                 type: string
+ *                 description: UUID of the duration
+ *                 example: "550e8400-e29b-41d4-a716-446655440000"
+ *               price:
+ *                 type: number
+ *                 description: Price for the duration
+ *                 example: 10000
+ *           example: [
+ *             {
+ *               duration: "550e8400-e29b-41d4-a716-446655440000",
+ *               price: 10000
+ *             },
+ *             {
+ *               duration: "550e8400-e29b-41d4-a716-446655440001",
+ *               price: 15000
+ *             }
+ *           ]
+ *       required:
+ *         - name
+ *         - satuan
+ *         - durations
+ *     ServiceResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Service created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/Service'
+ *       example:
+ *         status: "success"
+ *         message: "Service created successfully"
+ *         data:
+ *           id: "1"
+ *           name: "Dry Cleaning"
+ *           satuan: "kg"
+ *           durations: [
+ *             {
+ *               id: "550e8400-e29b-41d4-a716-446655440000",
+ *               duration: 30,
+ *               duration_name: "Half Hour",
+ *               price: 10000
+ *             },
+ *             {
+ *               id: "550e8400-e29b-41d4-a716-446655440001",
+ *               duration: 60,
+ *               duration_name: "One Hour",
+ *               price: 15000
+ *             }
+ *           ]
  */
 
 /**
  * @swagger
- * /v1/service:
+ * /service:
  *   get:
  *     summary: Get all services
  *     description: Retrieve a list of all services
- *     tags: [Service]
+ *     tags: [Services]
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -59,164 +156,137 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Service'
  */
-router.get('/', (req, res) => {
-  res.json(serviceItems); // Replace with your logic to fetch services
+router.get('/', async (req, res) => {
+  try {
+    const services = await getServices();
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve services' });
+  }
 });
 
 /**
  * @swagger
- * /v1/service:
+ * /service:
  *   post:
  *     summary: Create a new service
  *     description: Create a new service record
- *     tags: [Service]
+ *     tags: [Services]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Service'
+ *             $ref: '#/components/schemas/ServiceRequestBody'
  *     responses:
  *       201:
  *         description: Service created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Service'
+ *               $ref: '#/components/schemas/ServiceResponse'
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', (req, res) => {
-  const { id, name, satuan, durations } = req.body;
+router.post('/', async (req, res) => {
+  const { error } = serviceSchema.validate(req.body);
 
-  if (!id || !name || !satuan || !durations) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
   }
 
-  const newService: Service = { id, name, satuan, durations };
-  serviceItems.push(newService);
-
-  res.status(201).json(newService); // Replace with your logic to create a new service
+  try {
+    const newService = await addService(req.body);
+    res.status(201).json({
+      status: 'success',
+      message: 'Service created successfully',
+      data: newService
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Failed to create service' });
+  }
 });
 
 /**
  * @swagger
- * /v1/service/{id}:
- *   get:
- *     summary: Get a service by ID
- *     description: Retrieve a service by its ID
- *     tags: [Service]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the service to retrieve
- *     responses:
- *       200:
- *         description: Successful retrieval
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Service'
- *       404:
- *         description: Service not found
- */
-router.get('/:id', (req, res) => {
-  const serviceId = req.params.id;
-  const service = serviceItems.find(service => service.id === serviceId);
-
-  if (!service) {
-    return res.status(404).json({ error: 'Service not found' });
-  }
-
-  res.json(service); // Replace with your logic to fetch a service by ID
-});
-
-/**
- * @swagger
- * /v1/service/{id}:
+ * /service/{id}:
  *   put:
  *     summary: Update a service
- *     description: Update an existing service record by ID
- *     tags: [Service]
+ *     description: Update an existing service record
+ *     tags: [Services]
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the service to update
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Service'
+ *             $ref: '#/components/schemas/ServiceRequestBody'
  *     responses:
  *       200:
  *         description: Service updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Service'
+ *               $ref: '#/components/schemas/ServiceResponse'
  *       400:
  *         description: Bad request, invalid input
  *       404:
  *         description: Service not found
  */
-router.put('/:id', (req, res) => {
-  const serviceId = req.params.id;
-  const { name, satuan, durations } = req.body;
+router.put('/:id', async (req, res) => {
+  const { error } = serviceSchema.validate(req.body);
 
-  const serviceIndex = serviceItems.findIndex(service => service.id === serviceId);
-
-  if (serviceIndex === -1) {
-    return res.status(404).json({ error: 'Service not found' });
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
   }
 
-  if (!name || !satuan || !durations) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  try {
+    const updatedService = await updateService(req.params.id, req.body);
+    res.json({
+      status: 'success',
+      message: 'Service updated successfully',
+      data: updatedService
+    });
+  } catch (error) {
+    res.status(404).json({ error: 'Service not found' });
   }
-
-  serviceItems[serviceIndex] = { id: serviceId, name, satuan, durations };
-
-  res.json(serviceItems[serviceIndex]); // Replace with your logic to update the service
 });
 
 /**
  * @swagger
- * /v1/service/{id}:
+ * /service/{id}:
  *   delete:
  *     summary: Delete a service
- *     description: Delete a service record by ID
- *     tags: [Service]
+ *     description: Delete an existing service record
+ *     tags: [Services]
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the service to delete
  *     responses:
  *       204:
  *         description: Service deleted successfully
  *       404:
  *         description: Service not found
  */
-router.delete('/:id', (req, res) => {
-  const serviceId = req.params.id;
-
-  const serviceIndex = serviceItems.findIndex(service => service.id === serviceId);
-
-  if (serviceIndex === -1) {
-    return res.status(404).json({ error: 'Service not found' });
+router.delete('/:id', async (req, res) => {
+  try {
+    await deleteService(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      message: 'Service deleted successfully'
+    });
+  } catch (error) {
+    res.status(404).json({ error: 'Service not found' });
   }
-
-  serviceItems.splice(serviceIndex, 1);
-
-  res.status(204).send(); // Replace with your logic to delete the service
 });
 
 export default router;

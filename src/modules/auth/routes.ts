@@ -49,7 +49,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /v1/auth/login:
+ * /auth/login:
  *   post:
  *     summary: Logs in a user
  *     description: Logs in a user with credentials
@@ -86,7 +86,7 @@ router.post('/login', (req, res) => {
 
 /**
  * @swagger
- * /v1/auth/signup:
+ * /auth/signup:
  *   post:
  *     summary: Signs up a new user
  *     description: Creates a new user account
@@ -127,7 +127,7 @@ router.post('/signup', (req, res) => {
 
 /**
  * @swagger
- * /v1/auth/change-password:
+ * /auth/change-password:
  *   post:
  *     summary: Changes the user's password
  *     description: Allows a user to change their password

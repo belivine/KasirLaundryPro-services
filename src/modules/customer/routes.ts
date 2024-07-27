@@ -89,7 +89,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/customer:
+ * /customer:
  *   get:
  *     summary: Get all customers
  *     description: Retrieve a list of all customers
@@ -116,7 +116,7 @@ router.get("/", async (req, res) => {
 
 /**
  * @swagger
- * /api/customer:
+ * /customer:
  *   post:
  *     summary: Create a new customer
  *     description: Create a new customer record
@@ -178,7 +178,7 @@ router.post("/", (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/customer/{id}:
+ * /customer/{id}:
  *   put:
  *     summary: Update a customer
  *     description: Update an existing customer record by ID

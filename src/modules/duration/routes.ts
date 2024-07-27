@@ -70,7 +70,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/duration:
+ * /duration:
  *   get:
  *     summary: Get all durations
  *     description: Retrieve a list of all durations
@@ -100,7 +100,7 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /api/duration:
+ * /duration:
  *   post:
  *     summary: Create a new duration
  *     description: Create a new duration record
@@ -158,7 +158,7 @@ router.post('/', async (req, res) => {
 
 /**
  * @swagger
- * /api/duration/{id}:
+ * /duration/{id}:
  *   put:
  *     summary: Update a duration
  *     description: Update an existing duration record by ID
@@ -230,7 +230,7 @@ router.put('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /api/duration/{id}:
+ * /duration/{id}:
  *   delete:
  *     summary: Delete a duration
  *     description: Delete a duration record by ID
@@ -282,7 +282,7 @@ router.delete('/:id', async (req, res) => {
 
 /**
  * @swagger
- * /api/duration/{id}:
+ * /duration/{id}:
  *   get:
  *     summary: Get a duration by ID
  *     description: Retrieve a duration by its ID

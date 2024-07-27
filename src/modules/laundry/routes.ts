@@ -59,7 +59,7 @@ const laundryItems: Laundry[] = [
 
 /**
  * @swagger
- * /v1/laundry:
+ * /laundry:
  *   get:
  *     summary: Get all laundry items
  *     description: Retrieve a list of all laundry items
@@ -98,7 +98,7 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /v1/laundry:
+ * /laundry:
  *   post:
  *     summary: Create a new laundry item
  *     description: Create a new laundry record
@@ -135,7 +135,7 @@ router.post('/', (req, res) => {
 
 /**
  * @swagger
- * /v1/laundry/{id}:
+ * /laundry/{id}:
  *   put:
  *     summary: Update a laundry item
  *     description: Update an existing laundry record by ID
@@ -194,7 +194,7 @@ router.put('/:id', (req, res) => {
 
 /**
  * @swagger
- * /v1/laundry/{id}:
+ * /laundry/{id}:
  *   get:
  *     summary: Get laundry item details
  *     description: Retrieve details of a specific laundry item by ID

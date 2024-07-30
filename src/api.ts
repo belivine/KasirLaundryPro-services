@@ -6,6 +6,7 @@ import laundryRoutes from "./modules/laundry/routes";
 import customerRoutes from "./modules/customer/routes";
 import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
+import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
 import swaggerUi from "swagger-ui-express";
 import cors from 'cors';
@@ -35,7 +36,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api/', // Replace with your server URL
+        url: 'http://localhost:3000/api', // Replace with your server URL
       },
     ]
   },
@@ -60,6 +61,7 @@ routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);
 routerV1.use("/duration", durationRoutes);
+routerV1.use("/email-support", emailSupport);
 app.use("/api/", routerV1);
 
 // Start server

@@ -4,3 +4,4 @@ dist
 .env
 # Local Netlify folder
 .netlify
+src/config/cucibayargo-06faa754b656.json

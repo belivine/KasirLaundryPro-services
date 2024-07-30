@@ -6,6 +6,7 @@ import laundryRoutes from '../../src/modules/laundry/routes';
 import customerRoutes from '../../src/modules/customer/routes';
 import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
+import emailSupport from "../../src/modules/email-support/routes";
 import notesRoutes from '../../src/modules/notes/routes';
 import swaggerUi from "swagger-ui-express";
 import cors from 'cors';
@@ -52,6 +53,7 @@ routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);
 routerV1.use("/duration", durationRoutes);
+routerV1.use("/email-support", emailSupport);
 app.use("/api/", routerV1);
 
 // Start server

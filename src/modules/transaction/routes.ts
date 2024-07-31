@@ -1,8 +1,8 @@
 import express from 'express';
-import { Laundry } from './types';
+import { Transaction } from './types';
 
 const router = express.Router();
-const laundryItems: Laundry[] = [
+const laundryItems: Transaction[] = [
   // Example data
   {
     id: '1',
@@ -25,20 +25,20 @@ const laundryItems: Laundry[] = [
 /**
  * @swagger
  * tags:
- *   name: Laundry
- *   description: Laundry management APIs
+ *   name: Transaction
+ *   description: Transaction management APIs
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Laundry:
+ *     Transaction:
  *       type: object
  *       properties:
  *         id:
  *           type: string
- *           description: Unique identifier for the laundry
+ *           description: Unique identifier for the transaction
  *         customer:
  *           type: string
  *           description: Customer's UUID
@@ -47,31 +47,31 @@ const laundryItems: Laundry[] = [
  *           description: Duration UUID
  *         qty:
  *           type: number
- *           description: Quantity of laundry items
+ *           description: Quantity of transaction items
  *         service:
  *           type: string
  *           description: Service UUID
  *         status:
  *           type: string
- *           description: Status of the laundry
+ *           description: Status of the transaction
  *           enum: [Diproses, Selesai, Siap Diambil]
  */
 
 /**
  * @swagger
- * /laundry:
+ * /transaction:
  *   get:
- *     summary: Get all laundry items
- *     description: Retrieve a list of all laundry items
+ *     summary: Get all transaction items
+ *     description: Retrieve a list of all transaction items
  *     tags:
- *       - Laundry
+ *       - Transaction
  *     parameters:
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [Diproses, Selesai, Siap Diambil]
- *         description: Filter by laundry status
+ *         description: Filter by transaction status
  *       - in: query
  *         name: customer
  *         schema:
@@ -90,33 +90,33 @@ const laundryItems: Laundry[] = [
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Laundry'
+ *                 $ref: '#/components/schemas/Transaction'
  */
 router.get('/', (req, res) => {
-  res.json(laundryItems); // Replace with your logic to fetch laundry items
+  res.json(laundryItems); // Replace with your logic to fetch transaction items
 });
 
 /**
  * @swagger
- * /laundry:
+ * /transaction:
  *   post:
- *     summary: Create a new laundry item
- *     description: Create a new laundry record
+ *     summary: Create a new transaction item
+ *     description: Create a new transaction record
  *     tags:
- *       - Laundry
+ *       - Transaction
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Laundry'
+ *             $ref: '#/components/schemas/Transaction'
  *     responses:
  *       201:
- *         description: Laundry item created successfully
+ *         description: Transaction item created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Laundry'
+ *               $ref: '#/components/schemas/Transaction'
  *       400:
  *         description: Bad request, invalid input
  */
@@ -127,53 +127,53 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const newLaundry: Laundry = { id, customer, duration, qty, service, status };
+  const newLaundry: Transaction = { id, customer, duration, qty, service, status };
   laundryItems.push(newLaundry);
 
-  res.status(201).json(newLaundry); // Replace with your logic to create a new laundry item
+  res.status(201).json(newLaundry); // Replace with your logic to create a new transaction item
 });
 
 /**
  * @swagger
- * /laundry/{id}:
+ * /transaction/{id}:
  *   put:
- *     summary: Update a laundry item
- *     description: Update an existing laundry record by ID
+ *     summary: Update a transaction item
+ *     description: Update an existing transaction record by ID
  *     tags:
- *       - Laundry
+ *       - Transaction
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the laundry item to update
+ *         description: ID of the transaction item to update
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Laundry'
+ *             $ref: '#/components/schemas/Transaction'
  *     responses:
  *       200:
- *         description: Laundry item updated successfully
+ *         description: Transaction item updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Laundry'
+ *               $ref: '#/components/schemas/Transaction'
  *       400:
  *         description: Bad request, invalid input
  *       404:
- *         description: Laundry item not found
+ *         description: Transaction item not found
  */
 router.put('/:id', (req, res) => {
   const laundryId = req.params.id;
   const { customer, duration, qty, service, status } = req.body;
 
-  const laundryIndex = laundryItems.findIndex(laundry => laundry.id === laundryId);
+  const laundryIndex = laundryItems.findIndex(transaction => transaction.id === laundryId);
 
   if (laundryIndex === -1) {
-    return res.status(404).json({ error: 'Laundry item not found' });
+    return res.status(404).json({ error: 'Transaction item not found' });
   }
 
   if (!customer || !duration || !qty || !service || !status) {
@@ -189,44 +189,44 @@ router.put('/:id', (req, res) => {
     status,
   };
 
-  res.json(laundryItems[laundryIndex]); // Replace with your logic to update the laundry item
+  res.json(laundryItems[laundryIndex]); // Replace with your logic to update the transaction item
 });
 
 /**
  * @swagger
- * /laundry/{id}:
+ * /transaction/{id}:
  *   get:
- *     summary: Get laundry item details
- *     description: Retrieve details of a specific laundry item by ID
+ *     summary: Get transaction item details
+ *     description: Retrieve details of a specific transaction item by ID
  *     tags:
- *       - Laundry
+ *       - Transaction
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the laundry item to retrieve
+ *         description: ID of the transaction item to retrieve
  *     responses:
  *       200:
  *         description: Successful retrieval
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Laundry'
+ *               $ref: '#/components/schemas/Transaction'
  *       404:
- *         description: Laundry item not found
+ *         description: Transaction item not found
  */
 router.get('/:id', (req, res) => {
   const laundryId = req.params.id;
 
-  const laundryItem = laundryItems.find(laundry => laundry.id === laundryId);
+  const laundryItem = laundryItems.find(transaction => transaction.id === laundryId);
 
   if (!laundryItem) {
-    return res.status(404).json({ error: 'Laundry item not found' });
+    return res.status(404).json({ error: 'Transaction item not found' });
   }
 
-  res.json(laundryItem); // Replace with your logic to fetch the laundry item details
+  res.json(laundryItem); // Replace with your logic to fetch the transaction item details
 });
 
 export default router;

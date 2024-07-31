@@ -1,4 +1,4 @@
-export interface Laundry {
+export interface Transaction {
   id: string;
   customer: string; // customer UUID
   duration: string; // duration UUID

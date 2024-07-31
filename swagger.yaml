@@ -474,174 +474,6 @@
         }
       }
     },
-    "/laundry": {
-      "get": {
-        "summary": "Get all laundry items",
-        "description": "Retrieve a list of all laundry items",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "status",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Diproses",
-                "Selesai",
-                "Siap Diambil"
-              ]
-            },
-            "description": "Filter by laundry status"
-          },
-          {
-            "in": "query",
-            "name": "customer",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by customer UUID"
-          },
-          {
-            "in": "query",
-            "name": "date",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by date created"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Laundry"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new laundry item",
-        "description": "Create a new laundry record",
-        "tags": [
-          "Laundry"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Laundry"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Laundry item created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          }
-        }
-      }
-    },
-    "/laundry/{id}": {
-      "put": {
-        "summary": "Update a laundry item",
-        "description": "Update an existing laundry record by ID",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the laundry item to update"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Laundry"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Laundry item updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request, invalid input"
-          },
-          "404": {
-            "description": "Laundry item not found"
-          }
-        }
-      },
-      "get": {
-        "summary": "Get laundry item details",
-        "description": "Retrieve details of a specific laundry item by ID",
-        "tags": [
-          "Laundry"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the laundry item to retrieve"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Laundry"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Laundry item not found"
-          }
-        }
-      }
-    },
     "/note": {
       "get": {
         "summary": "Get all notes",
@@ -867,6 +699,174 @@
           },
           "404": {
             "description": "Service not found"
+          }
+        }
+      }
+    },
+    "/transaction": {
+      "get": {
+        "summary": "Get all transaction items",
+        "description": "Retrieve a list of all transaction items",
+        "tags": [
+          "Transaction"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Diproses",
+                "Selesai",
+                "Siap Diambil"
+              ]
+            },
+            "description": "Filter by transaction status"
+          },
+          {
+            "in": "query",
+            "name": "customer",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by customer UUID"
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by date created"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new transaction item",
+        "description": "Create a new transaction record",
+        "tags": [
+          "Transaction"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction item created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, invalid input"
+          }
+        }
+      }
+    },
+    "/transaction/{id}": {
+      "put": {
+        "summary": "Update a transaction item",
+        "description": "Update an existing transaction record by ID",
+        "tags": [
+          "Transaction"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the transaction item to update"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction item updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, invalid input"
+          },
+          "404": {
+            "description": "Transaction item not found"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get transaction item details",
+        "description": "Retrieve details of a specific transaction item by ID",
+        "tags": [
+          "Transaction"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the transaction item to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction item not found"
           }
         }
       }
@@ -1121,40 +1121,6 @@
           }
         }
       },
-      "Laundry": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the laundry"
-          },
-          "customer": {
-            "type": "string",
-            "description": "Customer's UUID"
-          },
-          "duration": {
-            "type": "string",
-            "description": "Duration UUID"
-          },
-          "qty": {
-            "type": "number",
-            "description": "Quantity of laundry items"
-          },
-          "service": {
-            "type": "string",
-            "description": "Service UUID"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of the laundry",
-            "enum": [
-              "Diproses",
-              "Selesai",
-              "Siap Diambil"
-            ]
-          }
-        }
-      },
       "Note": {
         "type": "object",
         "properties": {
@@ -1325,6 +1291,40 @@
             ]
           }
         }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the transaction"
+          },
+          "customer": {
+            "type": "string",
+            "description": "Customer's UUID"
+          },
+          "duration": {
+            "type": "string",
+            "description": "Duration UUID"
+          },
+          "qty": {
+            "type": "number",
+            "description": "Quantity of transaction items"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service UUID"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the transaction",
+            "enum": [
+              "Diproses",
+              "Selesai",
+              "Siap Diambil"
+            ]
+          }
+        }
       }
     }
   },
@@ -1346,16 +1346,16 @@
       "description": "Email Support APIs"
     },
     {
-      "name": "Laundry",
-      "description": "Laundry management APIs"
-    },
-    {
       "name": "Note",
       "description": "Notes management APIs"
     },
     {
       "name": "Services",
       "description": "Service management APIs"
+    },
+    {
+      "name": "Transaction",
+      "description": "Transaction management APIs"
     }
   ]
 }

@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import serverless from "serverless-http";
 import swaggerJsdoc from "swagger-jsdoc";
 import authRoutes from "./modules/auth/routes";
-import laundryRoutes from "./modules/laundry/routes";
+import TransactionRoutes from "./modules/transaction/routes";
 import customerRoutes from "./modules/customer/routes";
 import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
@@ -56,7 +56,7 @@ routerV1.use("/docs-json", (req, res) => {
 
 // Routes
 routerV1.use("/auth", authRoutes);
-routerV1.use("/laundry", laundryRoutes);
+routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);

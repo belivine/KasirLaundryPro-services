@@ -747,10 +747,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Transaction"
-                  }
+                  "$ref": "#/components/schemas/Transaction"
                 }
               }
             }
@@ -768,7 +765,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Transaction"
+                "$ref": "#/components/schemas/TransactionBodyRequest"
               }
             }
           }
@@ -779,7 +776,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transaction"
+                  "$ref": "#/components/schemas/TransactionResponse"
                 }
               }
             }
@@ -824,7 +821,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transaction"
+                  "$ref": "#/components/schemas/TransactionResponse"
                 }
               }
             }
@@ -860,7 +857,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transaction"
+                  "$ref": "#/components/schemas/TransactionDetail"
                 }
               }
             }
@@ -1301,19 +1298,11 @@
           },
           "customer": {
             "type": "string",
-            "description": "Customer's UUID"
+            "description": "Customer's Name"
           },
           "duration": {
             "type": "string",
-            "description": "Duration UUID"
-          },
-          "qty": {
-            "type": "number",
-            "description": "Quantity of transaction items"
-          },
-          "service": {
-            "type": "string",
-            "description": "Service UUID"
+            "description": "Duration Name"
           },
           "status": {
             "type": "string",
@@ -1323,6 +1312,151 @@
               "Selesai",
               "Siap Diambil"
             ]
+          }
+        }
+      },
+      "TransactionDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the transaction"
+          },
+          "customer": {
+            "type": "string",
+            "description": "UUID of the customer",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "duration": {
+            "type": "string",
+            "description": "UUID of the duration",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          },
+          "customer_name": {
+            "type": "string",
+            "description": "Customer's Name",
+            "example": "Brian Kliwon"
+          },
+          "duration_name": {
+            "type": "string",
+            "description": "Duration Name",
+            "example": "Express"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the transaction",
+            "enum": [
+              "Diproses",
+              "Selesai",
+              "Siap Diambil"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "service": {
+                  "type": "string",
+                  "description": "UUID of the service",
+                  "example": "550e8400-e29b-41d4-a716-446655440982"
+                },
+                "service_name": {
+                  "type": "string",
+                  "description": "Name of the service",
+                  "example": "Reguler"
+                },
+                "qty": {
+                  "type": "number",
+                  "description": "Total quantity per service",
+                  "example": 23
+                }
+              }
+            },
+            "example": [
+              {
+                "service": "550e8400-e29b-41d4-a716-446655440000",
+                "qty": 2
+              },
+              {
+                "service": "550e8400-e29b-41d4-a716-446655440001",
+                "qty": 3
+              }
+            ]
+          }
+        }
+      },
+      "TransactionBodyRequest": {
+        "type": "object",
+        "required": [
+          "customer",
+          "duration",
+          "status",
+          "items"
+        ],
+        "properties": {
+          "customer": {
+            "type": "string",
+            "description": "UUID of the customer",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "duration": {
+            "type": "string",
+            "description": "UUID of the duration",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the transaction",
+            "enum": [
+              "Diproses",
+              "Selesai",
+              "Siap Diambil"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "service": {
+                  "type": "string",
+                  "description": "UUID of the service",
+                  "example": "550e8400-e29b-41d4-a716-446655440982"
+                },
+                "qty": {
+                  "type": "number",
+                  "description": "Total quantity per service",
+                  "example": 23
+                }
+              }
+            },
+            "example": [
+              {
+                "service": "550e8400-e29b-41d4-a716-446655440000",
+                "qty": 2
+              },
+              {
+                "service": "550e8400-e29b-41d4-a716-446655440001",
+                "qty": 3
+              }
+            ]
+          }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string",
+            "example": "Transaction created successfully"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TransactionDetail"
           }
         }
       }

@@ -31,7 +31,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://kasirlaundrypro.netlify.app/api/', // Replace with your server URL
+        url: 'https://kasirlaundrypro.netlify.app/api', // Replace with your server URL
       },
     ]
   },

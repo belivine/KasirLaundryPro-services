@@ -1,26 +1,8 @@
-import express from 'express';
-import { Transaction } from './types';
+import express, { Request, Response } from 'express';
+import { Transaction, transactionSchema } from './types';
+import { addTransaction, getTransactions } from './controller';
 
 const router = express.Router();
-const laundryItems: Transaction[] = [
-  // Example data
-  {
-    id: '1',
-    customer: 'customer-uuid-1',
-    duration: 'duration-uuid-1',
-    qty: 5,
-    service: 'service-uuid-1',
-    status: 'Diproses',
-  },
-  {
-    id: '2',
-    customer: 'customer-uuid-2',
-    duration: 'duration-uuid-2',
-    qty: 10,
-    service: 'service-uuid-2',
-    status: 'Selesai',
-  },
-];
 
 /**
  * @swagger
@@ -41,20 +23,121 @@ const laundryItems: Transaction[] = [
  *           description: Unique identifier for the transaction
  *         customer:
  *           type: string
- *           description: Customer's UUID
+ *           description: Customer's Name
  *         duration:
  *           type: string
- *           description: Duration UUID
- *         qty:
- *           type: number
- *           description: Quantity of transaction items
- *         service:
- *           type: string
- *           description: Service UUID
+ *           description: Duration Name
  *         status:
  *           type: string
  *           description: Status of the transaction
  *           enum: [Diproses, Selesai, Siap Diambil]
+ *     TransactionDetail:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier for the transaction
+ *         customer:
+ *           type: string
+ *           description: UUID of the customer
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         duration:
+ *           type: string
+ *           description: UUID of the duration
+ *           example: "550e8400-e29b-41d4-a716-446655440001"
+ *         customer_name:
+ *           type: string
+ *           description: Customer's Name
+ *           example: "Brian Kliwon"
+ *         duration_name:
+ *           type: string
+ *           description: Duration Name
+ *           example: "Express"
+ *         status:
+ *           type: string
+ *           description: Status of the transaction
+ *           enum: [Diproses, Selesai, Siap Diambil]
+ *         items:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               service:
+ *                 type: string
+ *                 description: UUID of the service
+ *                 example: "550e8400-e29b-41d4-a716-446655440982"
+ *               service_name:
+ *                 type: string
+ *                 description: Name of the service
+ *                 example: "Reguler"
+ *               qty:
+ *                 type: number
+ *                 description: Total quantity per service
+ *                 example: 23
+ *           example: [
+ *             {
+ *               service: "550e8400-e29b-41d4-a716-446655440000",
+ *               qty: 2
+ *             },
+ *             {
+ *               service: "550e8400-e29b-41d4-a716-446655440001",
+ *               qty: 3
+ *             }
+ *           ]
+ *     TransactionBodyRequest:
+ *       type: object
+ *       required:
+ *         - customer
+ *         - duration
+ *         - status
+ *         - items
+ *       properties:
+ *         customer:
+ *           type: string
+ *           description: UUID of the customer
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         duration:
+ *           type: string
+ *           description: UUID of the duration
+ *           example: "550e8400-e29b-41d4-a716-446655440001"
+ *         status:
+ *           type: string
+ *           description: Status of the transaction
+ *           enum: [Diproses, Selesai, Siap Diambil]
+ *         items:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               service:
+ *                 type: string
+ *                 description: UUID of the service
+ *                 example: "550e8400-e29b-41d4-a716-446655440982"
+ *               qty:
+ *                 type: number
+ *                 description: Total quantity per service
+ *                 example: 23
+ *           example: [
+ *             {
+ *               service: "550e8400-e29b-41d4-a716-446655440000",
+ *               qty: 2
+ *             },
+ *             {
+ *               service: "550e8400-e29b-41d4-a716-446655440001",
+ *               qty: 3
+ *             }
+ *           ]
+ *     TransactionResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Transaction created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/TransactionDetail'
  */
 
 /**
@@ -88,12 +171,25 @@ const laundryItems: Transaction[] = [
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Transaction'
+ *               $ref: '#/components/schemas/Transaction'
  */
-router.get('/', (req, res) => {
-  res.json(laundryItems); // Replace with your logic to fetch transaction items
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    // Extract query parameters from the request
+    const status = req.query.status as string | null;
+    const customer = req.query.customer as string | null;
+    const date = req.query.date as string | null;
+
+    // Call the getTransactions function with extracted parameters
+    const transactions = await getTransactions(status || null, customer || null, date || null);
+
+    // Send the response with the transactions data
+    res.json(transactions);
+  } catch (error) {
+    // Handle and return any errors that occur
+    const err = error as Error; // Type assertion
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /**
@@ -109,28 +205,34 @@ router.get('/', (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Transaction'
+ *             $ref: '#/components/schemas/TransactionBodyRequest'
  *     responses:
  *       201:
  *         description: Transaction item created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Transaction'
+ *               $ref: '#/components/schemas/TransactionResponse'
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', (req, res) => {
-  const { id, customer, duration, qty, service, status } = req.body;
-
-  if (!id || !customer || !duration || !qty || !service || !status) {
-    return res.status(400).json({ error: 'Missing required fields' });
+router.post('/', async (req, res) => {
+  const { error } = transactionSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ status: 'error', message: error.details[0].message });
   }
 
-  const newLaundry: Transaction = { id, customer, duration, qty, service, status };
-  laundryItems.push(newLaundry);
-
-  res.status(201).json(newLaundry); // Replace with your logic to create a new transaction item
+  try {
+    const newService = await addTransaction(req.body);
+    res.status(201).json({
+      status: 'success',
+      message: 'Transaction created successfully',
+      data: newService
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: 'error', message: 'Failed to create transaction' });
+  }
 });
 
 /**
@@ -160,36 +262,17 @@ router.post('/', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Transaction'
+ *               $ref: '#/components/schemas/TransactionResponse'
  *       400:
  *         description: Bad request, invalid input
  *       404:
  *         description: Transaction item not found
  */
 router.put('/:id', (req, res) => {
-  const laundryId = req.params.id;
-  const { customer, duration, qty, service, status } = req.body;
-
-  const laundryIndex = laundryItems.findIndex(transaction => transaction.id === laundryId);
-
-  if (laundryIndex === -1) {
-    return res.status(404).json({ error: 'Transaction item not found' });
-  }
-
-  if (!customer || !duration || !qty || !service || !status) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  laundryItems[laundryIndex] = {
-    id: laundryId,
-    customer,
-    duration,
-    qty,
-    service,
-    status,
-  };
-
-  res.json(laundryItems[laundryIndex]); // Replace with your logic to update the transaction item
+  res.json({
+    status: 'success',
+    message: 'Transaction updated successfully',
+  }); // Replace with your logic to update the transaction item
 });
 
 /**
@@ -213,20 +296,16 @@ router.put('/:id', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Transaction'
+ *               $ref: '#/components/schemas/TransactionDetail'
  *       404:
  *         description: Transaction item not found
  */
 router.get('/:id', (req, res) => {
-  const laundryId = req.params.id;
-
-  const laundryItem = laundryItems.find(transaction => transaction.id === laundryId);
-
-  if (!laundryItem) {
-    return res.status(404).json({ error: 'Transaction item not found' });
-  }
-
-  res.json(laundryItem); // Replace with your logic to fetch the transaction item details
+  res.json({
+    status: 'success',
+    message: 'Transaction retrieved successfully',
+    data: []
+  }); // Replace with your logic to fetch the transaction item details
 });
 
 export default router;

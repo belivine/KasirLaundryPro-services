@@ -1,91 +1,8 @@
 import express, { Request, Response } from "express";
-import { addCustomer, GetCustomers, updateCustomer } from "./controller";
+import { addCustomer, GetCustomers, updateCustomer, getCustomerById, deleteCustomer } from "./controller";
 import { customerSchema } from "./types";
 
 const router = express.Router();
-
-/**
- * @swagger
- * tags:
- *   name: Customer
- *   description: Customer management APIs
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Customer:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *           example: "550e8400-e29b-41d4-a716-446655440000"
- *         name:
- *           type: string
- *           description: Customer's name
- *           example: "John Doe"
- *         phone_number:
- *           type: string
- *           description: Customer's phone number
- *           example: "089121333242"
- *         email:
- *           type: string
- *           description: Customer's email address
- *           example: "johndoe@gmail.com"
- *         address:
- *           type: string
- *           description: Customer's address
- *           example: "Jl. Kaliurang 190222"
- *         gender:
- *           type: string
- *           description: Customer's gender
- *           enum:
- *             - Laki-laki
- *             - Perempuan
- *           example: "Laki-laki"
- *     CustomerRequestBody:
- *       type: object
- *       required:
- *           - name
- *           - gender
- *       properties:
- *         name:
- *           type: string
- *           description: Customer's name
- *           example: "John Doe"
- *         phone_number:
- *           type: string
- *           description: Customer's phone number
- *           example: "089121333242"
- *         email:
- *           type: string
- *           description: Customer's email address
- *           example: "johndoe@gmail.com"
- *         address:
- *           type: string
- *           description: Customer's address
- *           example: "Jl. Kaliurang 190222"
- *         gender:
- *           type: string
- *           description: Customer's gender
- *           enum:
- *             - Laki-laki
- *             - Perempuan
- *           example: "Laki-laki"
- *     CustomerResponse:
- *       type: object
- *       properties:
- *         status:
- *           type: string
- *           example: "success"
- *         message:
- *           type: string
- *           example: "Customer created successfully"
- *         data:
- *           $ref: '#/components/schemas/Customer'
- */
 
 /**
  * @swagger
@@ -173,8 +90,46 @@ router.post("/", (req: Request, res: Response) => {
       const err = error as Error;
       res.status(500).json({ error: err.message });
     });
+});
+
+/**
+ * @swagger
+ * /customer/{id}:
+ *   get:
+ *     summary: Get a customer by ID
+ *     description: Retrieve a customer record by ID
+ *     tags: [Customer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the customer to retrieve
+ *     responses:
+ *       200:
+ *         description: Successful retrieval
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Customer'
+ *       404:
+ *         description: Customer not found
+ */
+router.get("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const customer = await getCustomerById(id);
+    if (customer) {
+      res.json(customer);
+    } else {
+      res.status(404).json({ error: "Customer not found" });
+    }
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 /**
  * @swagger
@@ -208,19 +163,19 @@ router.post("/", (req: Request, res: Response) => {
  *       404:
  *         description: Customer not found
  */
-router.put("/:id",(req: Request, res: Response) => {
-    const { error, value } = customerSchema.validate(req.body, { abortEarly: false });
+router.put("/:id", (req: Request, res: Response) => {
+  const { error, value } = customerSchema.validate(req.body, { abortEarly: false });
 
-    if (error) {
-      return res.status(400).json({
-        errors: error.details.map(err => ({
-          type: 'field',
-          msg: err.message,
-          path: err.path[0],
-          location: 'body'
-        }))
-      });
-    }
+  if (error) {
+    return res.status(400).json({
+      errors: error.details.map(err => ({
+        type: 'field',
+        msg: err.message,
+        path: err.path[0],
+        location: 'body'
+      }))
+    });
+  }
 
   const { id } = req.params;
   const { name, phone_number, email, address, gender } = req.body;
@@ -237,7 +192,41 @@ router.put("/:id",(req: Request, res: Response) => {
       const err = error as Error;
       res.status(500).json({ error: err.message });
     });
+});
+
+/**
+ * @swagger
+ * /customer/{id}:
+ *   delete:
+ *     summary: Delete a customer
+ *     description: Delete a customer record by ID
+ *     tags: [Customer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the customer to delete
+ *     responses:
+ *       200:
+ *         description: Customer deleted successfully
+ *       404:
+ *         description: Customer not found
+ */
+router.delete("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await deleteCustomer(id);
+    if (result) {
+      res.status(200).json({ status: "success", message: "Customer deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Customer not found" });
+    }
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 export default router;

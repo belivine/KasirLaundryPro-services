@@ -52,23 +52,26 @@ const router = express.Router();
  * @swagger
  * /note:
  *   get:
- *     summary: Get all notes
- *     description: Retrieve a list of all notes
+ *     summary: Get a single note
+ *     description: Retrieve a single note
  *     tags: [Note]
  *     responses:
  *       200:
- *         description: Successful retrieval
+ *         description: Successful retrieval of a single note
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Note'
+ *               $ref: '#/components/schemas/Note'
  */
 router.get("/", async (req, res) => {
   try {
-    const data = await GetNote();
-    res.json(data);
+    const data = await GetNote(); // Ensure GetNote() returns a single note object
+    if (Array.isArray(data)) {
+      // If GetNote() returns an array, handle it appropriately, e.g., return the first item
+      res.json(data[0] || null);
+    } else {
+      res.json(data);
+    }
   } catch (error) {
     const err = error as Error; // Type assertion
     res.status(500).json({ error: err.message });
@@ -78,9 +81,9 @@ router.get("/", async (req, res) => {
 /**
  * @swagger
  * /note:
- *   post:
- *     summary: Create a new note
- *     description: Create a new note record
+ *   put:
+ *     summary: Create or update a note
+ *     description: Create a new note if none exists, or update the latest note if one is found
  *     tags: [Note]
  *     requestBody:
  *       required: true
@@ -89,8 +92,8 @@ router.get("/", async (req, res) => {
  *           schema:
  *             $ref: '#/components/schemas/NoteRequestBody'
  *     responses:
- *       201:
- *         description: Note created successfully
+ *       200:
+ *         description: Note created or updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -98,7 +101,7 @@ router.get("/", async (req, res) => {
  *       400:
  *         description: Bad request, invalid input
  */
-router.post("/", (req, res) => {
+router.put("/", async (req, res) => {
   if (!req.body || typeof req.body !== "object") {
     return res.status(400).json({
       errors: [
@@ -124,79 +127,32 @@ router.post("/", (req, res) => {
   }
 
   const { notes } = req.body;
-  addNote({ notes })
-    .then((newCustomer) =>
-      res.status(201).json({
-        status: "success",
-        message: "Note created successfully",
-        data: newCustomer,
-      })
-    )
-    .catch((error) => {
-      const err = error as Error;
-      res.status(500).json({ error: err.message });
-    });
-});
 
-/**
- * @swagger
- * /note/{id}:
- *   put:
- *     summary: Update a note
- *     description: Update an existing note record
- *     tags: [Note]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *          type: string
- *         description: ID of the note to update
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/NoteRequestBody'
- *     responses:
- *       200:
- *         description: Note updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/NoteResponse'
- *       400:
- *         description: Bad request, invalid input
- */
-router.put("/:id", (req, res) => {
-  const { error, value } = noteSchema.validate(req.body, { abortEarly: false });
+  try {
+    // Attempt to get the latest note
+    const latestNote = await GetNote();
 
-  if (error) {
-    return res.status(400).json({
-      errors: error.details.map((err) => ({
-        type: "field",
-        msg: err.message,
-        path: err.path[0],
-        location: "body",
-      })),
-    });
-  }
-
-  const { id } = req.params;
-  const { notes } = req.body;
-
-  updateNote(id, { notes })
-    .then((updatedCustomer) =>
+    if (latestNote) {
+      // Update the latest note
+      const updatedNote = await updateNote(latestNote.id, { notes });
       res.status(200).json({
         status: "success",
         message: "Note updated successfully",
-        data: updatedCustomer,
-      })
-    )
-    .catch((error) => {
-      const err = error as Error;
-      res.status(500).json({ error: err.message });
-    });
+        data: updatedNote,
+      });
+    } else {
+      // Create a new note
+      const newNote = await addNote({ notes });
+      res.status(201).json({
+        status: "success",
+        message: "Note created successfully",
+        data: newNote,
+      });
+    }
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

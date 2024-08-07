@@ -2,14 +2,14 @@ import pool from "../../database/postgres";
 import { Note } from "./types";
 
 /**
- * Retrieve all notes from the database.
- * @returns {Promise<Note[]>} - A promise that resolves to an array of notes.
+ * Retrieve the most recent note from the database.
+ * @returns {Promise<Note | null>} - A promise that resolves to the most recent note, or null if no notes are found.
  */
-export async function GetNote(): Promise<Note[]> {
+export async function GetNote(): Promise<Note | null> {
   const client = await pool.connect();
   try {
-    const res = await client.query("SELECT * FROM note");
-    return res.rows;
+    const res = await client.query("SELECT * FROM note ORDER BY created_at DESC LIMIT 1");
+    return res.rows.length > 0 ? res.rows[0] : null;
   } finally {
     client.release();
   }

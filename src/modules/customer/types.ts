@@ -17,7 +17,7 @@ export const customerSchema = Joi.object({
   email: Joi.string().email().messages({
     'string.email': 'Invalid Email',
   }),
-  address: Joi.string(),
+  address: Joi.string().allow(''), // Address is not required
   phone_number: Joi.string().pattern(/^[+]?[0-9]{10,15}$/).required().messages({
     'string.pattern.base': 'Invalid phone number',
   }),

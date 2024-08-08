@@ -18,7 +18,8 @@ export async function getServices(): Promise<Service[]> {
              service_duration.price
       FROM service
       LEFT JOIN service_duration ON service.id = service_duration.service
-      LEFT JOIN duration ON service_duration.duration = duration.id;
+      LEFT JOIN duration ON service_duration.duration = duration.id
+      ORDER BY service.created_at DESC
     `;
 
     const result = await client.query(query);

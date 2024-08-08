@@ -6,6 +6,105 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Customer
+ *   description: Customer management APIs
+ */
+
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Customer:
+ *       type: object
+ *       required:
+ *         - id
+ *         - created_at
+ *         - name
+ *         - phone_number
+ *         - address
+ *         - gender
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: Unique identifier for the contact
+ *           example: 2f19fb0e-2926-418d-82ac-c2dc33a0f4d3
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the contact was created
+ *           example: "2024-08-07T13:58:23.934Z"
+ *         name:
+ *           type: string
+ *           description: Name of the contact
+ *           example: sasaksj
+ *         phone_number:
+ *           type: string
+ *           description: Phone number of the contact
+ *           example: "0238239238"
+ *         email:
+ *           type: string
+ *           nullable: true
+ *           description: Email address of the contact (nullable)
+ *           example: null
+ *         address:
+ *           type: string
+ *           description: Address of the contact
+ *           example: kajsajs
+ *         gender:
+ *           type: string
+ *           description: Gender of the contact
+ *           example: Perempuan
+ *     CustomerRequestBody:
+ *       type: object
+ *       required:
+ *         - name
+ *         - phone_number
+ *         - gender
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the customer
+ *           example: "John Doe"
+ *         email:
+ *           type: string
+ *           nullable: true
+ *           description: Email address of the customer
+ *           example: "john.doe@example.com"
+ *         address:
+ *           type: string
+ *           description: Address of the customer
+ *           example: "123 Main St, Springfield"
+ *         phone_number:
+ *           type: string
+ *           description: Phone number of the customer, must be between 10 and 15 digits, and can optionally start with a plus sign
+ *           pattern: '^[+]?[0-9]{10,15}$'
+ *           example: "+12345678901"
+ *         gender:
+ *           type: string
+ *           enum:
+ *             - Laki-laki
+ *             - Perempuan
+ *           description: Gender of the customer (Laki-laki or Perempuan)
+ *           example: "Laki-laki"
+ *     CustomerResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Customer created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/Customer'
+ */
+
+
+/**
+ * @swagger
  * /customer:
  *   get:
  *     summary: Get all customers

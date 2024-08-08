@@ -8,7 +8,7 @@ import { Duration, DurationType } from "./types";
 export async function getDurations(): Promise<Duration[]> {
   const client = await pool.connect();
   try {
-    const res = await client.query("SELECT * FROM duration");
+    const res = await client.query("SELECT * FROM duration ORDER BY created_at DESC");
     return res.rows;
   } finally {
     client.release();

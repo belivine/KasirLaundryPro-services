@@ -8,7 +8,7 @@ import { Customer } from "./types";
 export async function GetCustomers(): Promise<Customer[]> {
   const client = await pool.connect();
   try {
-    const res = await client.query("SELECT * FROM customer");
+    const res = await client.query("SELECT * FROM customer ORDER BY created_at DESC");
     return res.rows;
   } finally {
     client.release();

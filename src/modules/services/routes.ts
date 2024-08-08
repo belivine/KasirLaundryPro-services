@@ -1,6 +1,6 @@
 import express from 'express';
 import { serviceSchema } from './types';
-import { addService, deleteService, getServices, updateService } from './controller';
+import { addService, deleteService, getServiceById, getServices, updateService } from './controller';
 
 const router = express.Router();
 
@@ -15,6 +15,17 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
+ *     ServiceAll:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier for the service
+ *           example: "1"
+ *         name:
+ *           type: string
+ *           description: Service name
+ *           example: "Dry Cleaning"
  *     Duration:
  *       type: object
  *       properties:
@@ -154,7 +165,7 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Service'
+ *                 $ref: '#/components/schemas/ServiceAll'
  */
 router.get('/', async (req, res) => {
   try {
@@ -289,4 +300,45 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /service/{id}:
+ *   get:
+ *     summary: Get a service by ID
+ *     description: Retrieve a service by its ID
+ *     tags: [Services]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the service to retrieve
+ *     responses:
+ *       200:
+ *         description: Successful retrieval
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Service'
+ *       404:
+ *         description: Service not found
+ */
+router.get('/:id', async (req, res) => {
+  const serciveId = req.params.id;
+
+  try {
+    const duration = await getServiceById(serciveId);
+    if (!duration) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    res.json(duration);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+});
 export default router;

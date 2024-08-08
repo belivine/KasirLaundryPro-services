@@ -2,10 +2,32 @@ import pool from "../../database/postgres";
 import { Service, Duration } from "./types";
 
 /**
- * Retrieve all services with their associated durations from the database.
- * @returns {Promise<Service[]>} - A promise that resolves to an array of services with durations.
+* Retrieve all services with their IDs and names from the database.
+* @returns {Promise<{ id: number, name: string }[]>} - A promise that resolves to an array of services with their IDs and names.
+*/
+export async function getServices(): Promise<{ id: number, name: string }[]> {
+ const client = await pool.connect();
+ try {
+   const query = `
+     SELECT id, name
+     FROM service
+     ORDER BY created_at DESC
+   `;
+
+   const result = await client.query(query);
+   return result.rows;
+ } finally {
+   client.release();
+ }
+}
+
+
+/**
+ * Retrieve a service by its ID, along with its associated durations, from the database.
+ * @param {number} serviceId - The ID of the service to retrieve.
+ * @returns {Promise<Service | null>} - A promise that resolves to the service with durations or null if not found.
  */
-export async function getServices(): Promise<Service[]> {
+export async function getServiceById(serviceId: string): Promise<Service | null> {
   const client = await pool.connect();
   try {
     const query = `
@@ -19,24 +41,25 @@ export async function getServices(): Promise<Service[]> {
       FROM service
       LEFT JOIN service_duration ON service.id = service_duration.service
       LEFT JOIN duration ON service_duration.duration = duration.id
+      WHERE service.id = $1
       ORDER BY service.created_at DESC
     `;
 
-    const result = await client.query(query);
-    const servicesMap: Record<string, Service> = {};
+    const result = await client.query(query, [serviceId]);
+    if (result.rows.length === 0) {
+      return null; // Service not found
+    }
+
+    const service: Service = {
+      id: result.rows[0].id,
+      name: result.rows[0].name,
+      satuan: result.rows[0].satuan,
+      durations: [],
+    };
 
     result.rows.forEach(row => {
-      if (!servicesMap[row.id]) {
-        servicesMap[row.id] = {
-          id: row.id,
-          name: row.name,
-          satuan: row.satuan,
-          durations: [],
-        };
-      }
-
       if (row.duration_id) {
-        servicesMap[row.id].durations.push({
+        service.durations.push({
           id: row.duration_id,
           duration: row.duration,
           duration_name: row.duration_name,
@@ -45,7 +68,7 @@ export async function getServices(): Promise<Service[]> {
       }
     });
 
-    return Object.values(servicesMap);
+    return service;
   } finally {
     client.release();
   }

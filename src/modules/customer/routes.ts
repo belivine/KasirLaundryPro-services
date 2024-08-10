@@ -110,6 +110,12 @@ const router = express.Router();
  *     summary: Get all customers
  *     description: Retrieve a list of all customers
  *     tags: [Customer]
+ *     parameters:
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *            type: string
+ *         description: Filter Data by name, phone number, email
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -121,8 +127,11 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/Customer'
  */
 router.get("/", async (req, res) => {
+  // Extract query parameters from the request
+  const filter = req.query.filter as string | null;
+
   try {
-    const data = await GetCustomers();
+    const data = await GetCustomers(filter);
     res.json(data);
   } catch (error) {
     const err = error as Error; // Type assertion

@@ -5,13 +5,20 @@ import { Customer } from "./types";
  * Retrieve all customers from the database.
  * @returns {Promise<Customer[]>} - A promise that resolves to an array of customers.
  */
-export async function GetCustomers(): Promise<Customer[]> {
+export async function GetCustomers(filter: string | null): Promise<Customer[]> {
   const client = await pool.connect();
   try {
-    const res = await client.query("SELECT * FROM customer ORDER BY created_at DESC");
-    return res.rows;
+    let query = `
+          SELECT * FROM customer
+          WHERE ($1::text IS NULL OR customer.name ILIKE '%' || $1 || '%')
+              OR ($1::text IS NULL OR customer.phone_number ILIKE '%' || $1 || '%')
+              OR ($1::text IS NULL OR customer.email ILIKE '%' || $1 || '%')
+          ORDER BY created_at DESC
+      `;
+      const res = await client.query(query, [filter]);
+      return res.rows;
   } finally {
-    client.release();
+      client.release();
   }
 }
 

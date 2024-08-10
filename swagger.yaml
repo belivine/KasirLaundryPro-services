@@ -163,6 +163,16 @@
         "tags": [
           "Customer"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter Data by name, phone number, email"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful retrieval",

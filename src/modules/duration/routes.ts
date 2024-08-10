@@ -15,7 +15,7 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
- *     Duration:
+ *     DurationAll:
  *       type: object
  *       properties:
  *         id:
@@ -65,7 +65,7 @@ const router = express.Router();
  *           type: string
  *           example: "Duration created successfully"
  *         data:
- *           $ref: '#/components/schemas/Duration'
+ *           $ref: '#/components/schemas/DurationAll'
  */
 
 /**
@@ -75,6 +75,12 @@ const router = express.Router();
  *     summary: Get all durations
  *     description: Retrieve a list of all durations
  *     tags: [Duration]
+ *     parameters:
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *            type: string
+ *         description: Filter Data by name, duration, type
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -83,11 +89,14 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Duration'
+ *                 $ref: '#/components/schemas/DurationAll'
  */
 router.get('/', async (req, res) => {
+  // Extract query parameters from the request
+  const filter = req.query.filter as string | null;
+
   try {
-    const durations = await getDurations();
+    const durations = await getDurations(filter);
     res.json(durations);
   } catch (error) {
     if (error instanceof Error) {
@@ -300,7 +309,7 @@ router.delete('/:id', async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Duration'
+ *               $ref: '#/components/schemas/DurationAll'
  *       404:
  *         description: Duration not found
  */

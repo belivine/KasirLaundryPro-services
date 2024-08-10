@@ -5,16 +5,17 @@ import { Service, Duration } from "./types";
 * Retrieve all services with their IDs and names from the database.
 * @returns {Promise<{ id: number, name: string }[]>} - A promise that resolves to an array of services with their IDs and names.
 */
-export async function getServices(): Promise<{ id: number, name: string }[]> {
+export async function getServices(filter: string | null): Promise<{ id: number, name: string }[]> {
  const client = await pool.connect();
  try {
    const query = `
      SELECT id, name
      FROM service
+     WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%')
      ORDER BY created_at DESC
    `;
 
-   const result = await client.query(query);
+   const result = await client.query(query, [filter]);
    return result.rows;
  } finally {
    client.release();

@@ -157,6 +157,12 @@ const router = express.Router();
  *     summary: Get all services
  *     description: Retrieve a list of all services
  *     tags: [Services]
+*     parameters:
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *            type: string
+ *         description: Filter Data by name
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -168,8 +174,10 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/ServiceAll'
  */
 router.get('/', async (req, res) => {
+  // Extract query parameters from the request
+  const filter = req.query.filter as string | null;
   try {
-    const services = await getServices();
+    const services = await getServices(filter);
     res.json(services);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve services' });

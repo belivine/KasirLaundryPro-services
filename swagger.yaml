@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://kasirlaundrypro.netlify.app/api"
+      "url": https://kasirlaundrypro.netlify.app/api"
     }
   ],
   "paths": {
@@ -336,6 +336,16 @@
         "tags": [
           "Duration"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter Data by name, duration, type"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful retrieval",
@@ -344,7 +354,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Duration"
+                    "$ref": "#/components/schemas/DurationAll"
                   }
                 }
               }
@@ -498,7 +508,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Duration"
+                  "$ref": "#/components/schemas/DurationAll"
                 }
               }
             }
@@ -602,6 +612,16 @@
         "description": "Retrieve a list of all services",
         "tags": [
           "Services"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter Data by name"
+          }
         ],
         "responses": {
           "200": {
@@ -1076,12 +1096,12 @@
           }
         }
       },
-      "Duration": {
+      "DurationAll": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "description": "Duration ID",
+            "description": "Unique identifier for the duration",
             "example": "1"
           },
           "name": {
@@ -1091,8 +1111,8 @@
           },
           "duration": {
             "type": "number",
-            "description": "Duration in minutes",
-            "example": 30
+            "description": "Duration value",
+            "example": 1
           },
           "type": {
             "type": "string",
@@ -1102,16 +1122,6 @@
             ],
             "description": "Type of duration (Hari or Jam)",
             "example": "Hari"
-          },
-          "duration_name": {
-            "type": "string",
-            "description": "Name of the duration",
-            "example": "Half Hour"
-          },
-          "price": {
-            "type": "number",
-            "description": "Price for the duration",
-            "example": 10000
           }
         }
       },
@@ -1151,7 +1161,7 @@
             "example": "Duration created successfully"
           },
           "data": {
-            "$ref": "#/components/schemas/Duration"
+            "$ref": "#/components/schemas/DurationAll"
           }
         }
       },
@@ -1243,6 +1253,31 @@
             "type": "string",
             "description": "Service name",
             "example": "Dry Cleaning"
+          }
+        }
+      },
+      "Duration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Duration ID",
+            "example": "1"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration in minutes",
+            "example": 30
+          },
+          "duration_name": {
+            "type": "string",
+            "description": "Name of the duration",
+            "example": "Half Hour"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price for the duration",
+            "example": 10000
           }
         }
       },

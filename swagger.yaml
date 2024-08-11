@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": https://kasirlaundrypro.netlify.app/api"
+      "url": "https://kasirlaundrypro.netlify.app/api"
     }
   ],
   "paths": {

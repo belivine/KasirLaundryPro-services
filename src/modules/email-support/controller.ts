@@ -4,14 +4,18 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env file (if not already loaded by Netlify)
 dotenv.config();
 
-// Retrieve the service account credentials from environment variables
+// Retrieve and parse the service account credentials from environment variables
 const keyFileContent = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 if (!keyFileContent) {
   throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
 }
 
-// Parse the key file content
-const credentials = JSON.parse(keyFileContent);
+let credentials: any;
+try {
+  credentials = JSON.parse(keyFileContent);
+} catch (error) {
+  throw new Error('Error parsing GOOGLE_SERVICE_ACCOUNT_KEY');
+}
 
 // The spreadsheet ID from the provided URL
 const SPREADSHEET_ID = '14tv3OZaPKVJp7Tl8X8J3U1z5UK4oq8NJxAtS-L_Em_Y';

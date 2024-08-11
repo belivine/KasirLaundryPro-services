@@ -34,7 +34,7 @@ export async function getServiceById(serviceId: string): Promise<Service | null>
     const query = `
       SELECT service.id AS id,
              service.name AS name,
-             service.satuan AS satuan,
+             service.unit AS unit,
              service_duration.id AS duration_id,
              service_duration.duration,
              duration.name AS duration_name,
@@ -54,7 +54,7 @@ export async function getServiceById(serviceId: string): Promise<Service | null>
     const service: Service = {
       id: result.rows[0].id,
       name: result.rows[0].name,
-      satuan: result.rows[0].satuan,
+      unit: result.rows[0].unit,
       durations: [],
     };
 
@@ -83,12 +83,12 @@ export async function getServiceById(serviceId: string): Promise<Service | null>
 export async function addService(service: Omit<Service, 'id'>): Promise<Service> {
   const client = await pool.connect();
   try {
-    const { name, satuan, durations } = service;
+    const { name, unit, durations } = service;
     const query = `
-      INSERT INTO service (name, satuan)
+      INSERT INTO service (name, unit)
       VALUES ($1, $2) RETURNING id;
     `;
-    const values = [name, satuan];
+    const values = [name, unit];
     const result = await client.query(query, values);
     const newServiceId = result.rows[0].id;
 
@@ -110,7 +110,7 @@ export async function addService(service: Omit<Service, 'id'>): Promise<Service>
     return {
       id: newServiceId,
       name,
-      satuan,
+      unit,
       durations,
     };
   } finally {
@@ -127,15 +127,15 @@ export async function addService(service: Omit<Service, 'id'>): Promise<Service>
 export async function updateService(id: string, service: Omit<Service, 'id'>): Promise<Service> {
   const client = await pool.connect();
   try {
-    const { name, satuan, durations } = service;
+    const { name, unit, durations } = service;
 
     // Update the service
     const updateServiceQuery = `
       UPDATE service
-      SET name = $1, satuan = $2
+      SET name = $1, unit = $2
       WHERE id = $3 RETURNING id;
     `;
-    const updateServiceValues = [name, satuan, id];
+    const updateServiceValues = [name, unit, id];
     await client.query(updateServiceQuery, updateServiceValues);
 
     // Remove existing durations and add new ones
@@ -158,7 +158,7 @@ export async function updateService(id: string, service: Omit<Service, 'id'>): P
     return {
       id,
       name,
-      satuan,
+      unit,
       durations,
     };
   } finally {

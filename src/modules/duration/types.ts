@@ -13,17 +13,17 @@ export interface Duration {
 }
   
 
-  // Define the Joi schema
+// Define the Joi schema
 export const durationSchema = Joi.object({
   name: Joi.string().required().messages({
-    'string.empty': 'Name is required',
+    'string.empty': 'Nama wajib diisi',
   }),
   duration: Joi.number().required().messages({
-    'string.empty': 'Duration is required',
+    'number.base': 'Durasi harus berupa angka',
+    'number.empty': 'Durasi wajib diisi',
   }),
   type: Joi.string().valid('Hari', 'Jam').required().messages({
-    'any.only': 'Invalid type',
-    'string.empty': 'Type is required',
+    'any.only': 'Tipe tidak valid',
+    'string.empty': 'Tipe wajib diisi',
   }),
 });
-

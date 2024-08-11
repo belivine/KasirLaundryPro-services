@@ -66,7 +66,7 @@ const router = express.Router();
  */
 
 
-router.post("/", (req: Request, res: Response) => {
+router.post("/", async (req: Request, res: Response) => {
     const { error, value } = emailSupportSchema.validate(req.body, { abortEarly: false });
 
     if (error) {
@@ -82,13 +82,14 @@ router.post("/", (req: Request, res: Response) => {
 
     const { title, message } = req.body;
 
-    // Example data to insert
+    // Data to insert
     const rowData = [title, message, "Pending"];
 
     // Insert the row
-    insertRow(rowData).catch((error) => {
+    await insertRow(rowData).catch((error) => {
         const err = error as Error;
-        res.status(500).json({ error: err.message });
+        console.log(err.message);
+        res.status(500).json({ error: "Aplikasi mengalami gangguan. Silakan kontak kami langsung melalui cucibayargo@gmail.com." });
     });
     res.status(200).json({
         status: "success",

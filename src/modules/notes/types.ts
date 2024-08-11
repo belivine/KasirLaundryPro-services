@@ -7,6 +7,6 @@ export interface Note {
 
 export const noteSchema = Joi.object({
     notes: Joi.string().required().messages({
-        'string.empty' : 'Note Is Required'
-    })
-})
+        'string.empty': 'Catatan wajib diisi',
+    }),
+});

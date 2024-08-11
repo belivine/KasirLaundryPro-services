@@ -56,7 +56,7 @@ const router = express.Router();
  *           type: string
  *           description: Service name
  *           example: "Dry Cleaning"
- *         satuan:
+ *         unit:
  *           type: string
  *           description: Unit of measurement
  *           example: "kg"
@@ -85,7 +85,7 @@ const router = express.Router();
  *           type: string
  *           description: Service name
  *           example: "Dry Cleaning"
- *         satuan:
+ *         unit:
  *           type: string
  *           description: Unit of measurement
  *           example: "kg"
@@ -114,7 +114,7 @@ const router = express.Router();
  *           ]
  *       required:
  *         - name
- *         - satuan
+ *         - unit
  *         - durations
  *     ServiceResponse:
  *       type: object
@@ -133,7 +133,7 @@ const router = express.Router();
  *         data:
  *           id: "1"
  *           name: "Dry Cleaning"
- *           satuan: "kg"
+ *           unit: "kg"
  *           durations: [
  *             {
  *               id: "550e8400-e29b-41d4-a716-446655440000",

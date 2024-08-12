@@ -7,14 +7,16 @@ dotenv.config();
 // Retrieve and parse the service account credentials from environment variables
 const keyFileContent = process.env.GOOGLE_SERVICE_ACCOUNT_KEY as string;
 if (!keyFileContent) {
-  throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
+  console.log("Error", "GOOGLE_SERVICE_ACCOUNT_KEY is not set");
 }
 
 let credentials: any;
 try {
   credentials = JSON.parse(keyFileContent);
 } catch (error) {
-  throw new Error('Error parsing GOOGLE_SERVICE_ACCOUNT_KEY');
+  console.log("Token", keyFileContent);
+  console.log(error);
+  credentials = keyFileContent;
 }
 
 // The spreadsheet ID from the provided URL

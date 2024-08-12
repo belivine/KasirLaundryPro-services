@@ -28,7 +28,9 @@ const corsOptions: CorsOptions = {
     if (allowedOrigins.includes(origin) || localhostRegex.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.log(origin);
+      callback(null, true);
+      // callback(new Error('Not allowed by CORS'));
     }
   }
 };

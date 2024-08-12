@@ -1,6 +1,9 @@
-import express, { Router } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import serverless from "serverless-http";
 import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import cors, { CorsOptions } from 'cors';
+import fs from "fs";
 import authRoutes from "./modules/auth/routes";
 import TransactionRoutes from "./modules/transaction/routes";
 import customerRoutes from "./modules/customer/routes";
@@ -8,53 +11,63 @@ import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
 import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
-import swaggerUi from "swagger-ui-express";
-import cors from 'cors';
-import fs from "fs";
 
 const app = express();
-app.use(express.json()); 
-app.use(cors());
-app.use((req, res, next) => {
-  console.log('Middleware Check:', req.body); // Log to check if body is parsed
+
+// CORS configuration
+const allowedOrigins = ['https://merchant-app-fe.vercel.app'];
+const localhostRegex = /^http:\/\/localhost(:\d+)?$/;
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || localhostRegex.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log('Middleware Check:', req.body);
   next();
 });
 
 const port = 3000;
-
 const routerV1 = Router();
 
-// Swagger configuration
+// Swagger configuration and setup
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Kasir Laundry Pro",
       version: "1.0.0",
-      description:
-        "API Routes and schema details of Kasir Laundry Pro Services",
+      description: "API Routes and schema details of Kasir Laundry Pro Services",
     },
     servers: [
       {
-        url: 'http://localhost:3000/api', // Replace with your server URL
+        url: 'http://localhost:3000/api',
       },
     ]
   },
-  apis: ["./src/modules/**/*.ts"], // Path to the API routes or files to be documented
+  apis: ["./src/modules/**/*.ts"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
-// Convert swaggerSpec to a string
-const swaggerSpecString = JSON.stringify(swaggerSpec, null, 2);
-fs.writeFileSync('swagger.yaml', swaggerSpecString);
+fs.writeFileSync('swagger.yaml', JSON.stringify(swaggerSpec, null, 2));
 
-// Serve Swagger UI
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-routerV1.use("/docs-json", (req, res) => {
-    res.json(swaggerSpec)
-})
+routerV1.use("/docs-json", (req: Request, res: Response) => {
+  res.json(swaggerSpec)
+});
 
-// Routes
+// Routes setup
 routerV1.use("/auth", authRoutes);
 routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
@@ -64,7 +77,6 @@ routerV1.use("/duration", durationRoutes);
 routerV1.use("/email-support", emailSupport);
 app.use("/api/", routerV1);
 
-// Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

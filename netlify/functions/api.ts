@@ -1,6 +1,8 @@
-import express, { Router } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import serverless from "serverless-http";
 import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from "swagger-ui-express";
+import cors, { CorsOptions } from 'cors';
 import authRoutes from '../../src/modules/auth/routes';
 import TransactionRoutes from '../../src/modules/transaction/routes';
 import customerRoutes from '../../src/modules/customer/routes';
@@ -8,12 +10,30 @@ import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
 import emailSupport from "../../src/modules/email-support/routes";
 import notesRoutes from '../../src/modules/notes/routes';
-import swaggerUi from "swagger-ui-express";
-import cors from 'cors';
 
 const app = express();
-app.use(express.json()); 
-app.use(cors());
+app.use(express.json());
+
+// CORS configuration
+const allowedOrigins = [
+  'https://merchant-app-fe.vercel.app',
+  'https://cors.redoc.ly'
+];
+const localhostRegex = /^http:\/\/localhost(:\d+)?$/;
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || localhostRegex.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
 
 const port = 3000;
 
@@ -42,9 +62,9 @@ const swaggerSpec = swaggerJsdoc(options);
 
 // Serve Swagger UI
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-routerV1.use("/docs-json", (req, res) => {
+routerV1.use("/docs-json", (req: Request, res: Response) => {
     res.json(swaggerSpec)
-})
+});
 
 // Routes
 routerV1.use("/auth", authRoutes);

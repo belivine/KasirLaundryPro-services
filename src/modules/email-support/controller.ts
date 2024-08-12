@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Retrieve and parse the service account credentials from environment variables
-const keyFileContent = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+const keyFileContent = process.env.GOOGLE_SERVICE_ACCOUNT_KEY as string;
 if (!keyFileContent) {
   throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
 }

@@ -11,6 +11,7 @@ import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
 import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -31,6 +32,7 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use((req: Request, res: Response, next: NextFunction) => {

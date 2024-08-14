@@ -10,7 +10,7 @@ import serviceRoutes from '../../src/modules/services/routes';
 import durationRoutes from '../../src/modules/duration/routes';
 import emailSupport from "../../src/modules/email-support/routes";
 import notesRoutes from '../../src/modules/notes/routes';
-
+import cookieParser from 'cookie-parser';
 const app = express();
 app.use(express.json());
 
@@ -36,6 +36,7 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 const port = 3000;
 

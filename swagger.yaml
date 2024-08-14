@@ -48,13 +48,32 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Login berhasil."
+                    }
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized, invalid credentials"
+            "description": "Unauthorized, invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email tidak ditemukan."
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -84,12 +103,17 @@
                   "name": {
                     "type": "string",
                     "description": "User's name"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password"
                   }
                 },
                 "required": [
                   "email",
                   "phone_number",
-                  "name"
+                  "name",
+                  "password"
                 ]
               }
             }
@@ -101,13 +125,32 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Signup berhasil."
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request, invalid input"
+            "description": "Bad request, invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email sudah digunakan."
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -126,18 +169,23 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "old_password": {
+                  "email": {
+                    "type": "string",
+                    "description": "User's email address"
+                  },
+                  "currentPassword": {
                     "type": "string",
                     "description": "User's current password"
                   },
-                  "new_password": {
+                  "newPassword": {
                     "type": "string",
                     "description": "User's new password"
                   }
                 },
                 "required": [
-                  "old_password",
-                  "new_password"
+                  "email",
+                  "currentPassword",
+                  "newPassword"
                 ]
               }
             }
@@ -145,13 +193,52 @@
         },
         "responses": {
           "200": {
-            "description": "Password successfully changed"
+            "description": "Password successfully changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password updated successfully."
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request, invalid input"
+            "description": "Bad request, invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Current password is incorrect."
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized, invalid credentials"
+            "description": "Unauthorized, invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Current password is incorrect."
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -948,6 +1035,10 @@
       "User": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "User's unique identifier"
+          },
           "name": {
             "type": "string",
             "description": "User's name"

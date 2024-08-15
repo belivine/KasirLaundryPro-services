@@ -53,6 +53,10 @@
                     "message": {
                       "type": "string",
                       "example": "Login berhasil."
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "xxxxx.yyyyy.zzzzz"
                     }
                   }
                 }
@@ -130,6 +134,10 @@
                     "message": {
                       "type": "string",
                       "example": "Signup berhasil."
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "xxxxx.yyyyy.zzzzz"
                     }
                   }
                 }

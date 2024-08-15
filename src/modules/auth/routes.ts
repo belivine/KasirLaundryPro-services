@@ -88,6 +88,9 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Login berhasil."
+ *                 token:
+ *                   type: string
+ *                   example: "xxxxx.yyyyy.zzzzz"
  *       '401':
  *         description: Unauthorized, invalid credentials
  *         content:
@@ -120,7 +123,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(200).json({ message: "Login berhasil." });
+    res.status(200).json({ message: "Login berhasil.", token: token});
   } catch (err:any) {
     res
       .status(500)
@@ -170,6 +173,9 @@ router.post("/login", async (req, res) => {
  *                 message:
  *                   type: string
  *                   example: "Signup berhasil."
+ *                 token:
+ *                   type: string
+ *                   example: "xxxxx.yyyyy.zzzzz"
  *       '400':
  *         description: Bad request, invalid input
  *         content:
@@ -207,7 +213,7 @@ router.post("/signup", async (req, res) => {
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(201).json({ message: "Signup berhasil." });
+    res.status(201).json({ message: "Signup berhasil.", token: token});
   } catch (err: any) {
     res
       .status(500)

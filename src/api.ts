@@ -12,6 +12,7 @@ import durationRoutes from "./modules/duration/routes";
 import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
 import cookieParser from 'cookie-parser';
+import authMiddleware from "./middlewares";
 
 const app = express();
 
@@ -71,6 +72,8 @@ routerV1.use("/docs-json", (req: Request, res: Response) => {
 
 // Routes setup
 routerV1.use("/auth", authRoutes);
+
+app.use(authMiddleware);
 routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);

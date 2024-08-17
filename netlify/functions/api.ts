@@ -3,7 +3,6 @@ import serverless from "serverless-http";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import cors, { CorsOptions } from 'cors';
-import fs from "fs";
 import authRoutes from "../../src/modules/auth/routes";
 import TransactionRoutes from "../../src/modules/transaction/routes";
 import customerRoutes from "../../src/modules/customer/routes";
@@ -76,7 +75,7 @@ const options = {
 };
 
 const swaggerSpec = swaggerJsdoc(options);
-fs.writeFileSync('swagger.yaml', JSON.stringify(swaggerSpec, null, 2));
+// fs.writeFileSync('swagger.yaml', JSON.stringify(swaggerSpec, null, 2));
 
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 routerV1.use("/docs-json", (req: Request, res: Response) => {

@@ -5,17 +5,17 @@ import { Customer } from "./types";
  * Retrieve all customers from the database.
  * @returns {Promise<Customer[]>} - A promise that resolves to an array of customers.
  */
-export async function GetCustomers(filter: string | null): Promise<Customer[]> {
+export async function GetCustomers(filter: string | null, merchant_id: string): Promise<Customer[]> {
   const client = await pool.connect();
   try {
     let query = `
           SELECT * FROM customer
-          WHERE ($1::text IS NULL OR customer.name ILIKE '%' || $1 || '%')
+          WHERE (($1::text IS NULL OR customer.name ILIKE '%' || $1 || '%')
               OR ($1::text IS NULL OR customer.phone_number ILIKE '%' || $1 || '%')
-              OR ($1::text IS NULL OR customer.email ILIKE '%' || $1 || '%')
+              OR ($1::text IS NULL OR customer.email ILIKE '%' || $1 || '%')) AND merchant_id = $2
           ORDER BY created_at DESC
       `;
-      const res = await client.query(query, [filter]);
+      const res = await client.query(query, [filter, merchant_id]);
       return res.rows;
   } finally {
       client.release();
@@ -42,15 +42,15 @@ export async function getCustomerById(id: string): Promise<Customer | null> {
  * @param customer - The customer data to add. Excludes 'id' as it's auto-generated.
  * @returns {Promise<Customer>} - A promise that resolves to the newly created customer.
  */
-export async function addCustomer(customer: Omit<Customer, 'id'>): Promise<Customer> {
+export async function addCustomer(customer: Omit<Customer, 'id'>, merchant_id: string): Promise<Customer> {
   const client = await pool.connect();
   try {
     const { name, phone_number, email, address, gender } = customer;
     const query = `
-      INSERT INTO customer (name, phone_number, email, address, gender)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *;
+      INSERT INTO customer (name, phone_number, email, address, gender, merchant_id)
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
     `;
-    const values = [name, phone_number, email || null, address, gender];
+    const values = [name, phone_number, email || null, address, gender, merchant_id];
     const result = await client.query(query, values);
     return result.rows[0];
   } finally {

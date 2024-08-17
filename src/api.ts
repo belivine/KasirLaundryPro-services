@@ -85,7 +85,7 @@ routerV1.use("/docs-json", (req: Request, res: Response) => {
 // Routes setup
 routerV1.use("/auth", authRoutes);
 
-app.use(authMiddleware);
+routerV1.use(authMiddleware);
 routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);

@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { addCustomer, GetCustomers, updateCustomer, getCustomerById, deleteCustomer } from "./controller";
 import { customerSchema } from "./types";
+import { AuthenticatedRequest } from "src/middlewares";
 
 const router = express.Router();
 
@@ -126,12 +127,12 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Customer'
  */
-router.get("/", async (req, res) => {
+router.get("/", async (req: AuthenticatedRequest, res) => {
   // Extract query parameters from the request
   const filter = req.query.filter as string | null;
 
   try {
-    const data = await GetCustomers(filter);
+    const data = await GetCustomers(filter, req.userId ?? "empty");
     res.json(data);
   } catch (error) {
     const err = error as Error; // Type assertion
@@ -162,7 +163,7 @@ router.get("/", async (req, res) => {
  *       400:
  *         description: Bad request, invalid input
  */
-router.post("/", (req: Request, res: Response) => {
+router.post("/", (req: AuthenticatedRequest, res: Response) => {
   if (!req.body || typeof req.body !== 'object') {
     return res.status(400).json({
       errors: [{
@@ -186,7 +187,9 @@ router.post("/", (req: Request, res: Response) => {
   }
 
   const { name, phone_number, email, address, gender } = req.body;
-  addCustomer({ name, phone_number, email, address, gender })
+  console.log(req.userId);
+  
+  addCustomer({ name, phone_number, email, address, gender }, req.userId ?? "")
     .then((newCustomer) =>
       res.status(201).json({
         status: "success",

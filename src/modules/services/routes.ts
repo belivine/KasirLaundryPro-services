@@ -1,6 +1,7 @@
 import express from 'express';
 import { serviceSchema } from './types';
 import { addService, deleteService, getServiceById, getServices, updateService } from './controller';
+import { AuthenticatedRequest } from 'src/middlewares';
 
 const router = express.Router();
 
@@ -173,11 +174,11 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/ServiceAll'
  */
-router.get('/', async (req, res) => {
+router.get('/', async (req: AuthenticatedRequest, res) => {
   // Extract query parameters from the request
   const filter = req.query.filter as string | null;
   try {
-    const services = await getServices(filter);
+    const services = await getServices(filter, req.userId);
     res.json(services);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve services' });
@@ -207,7 +208,7 @@ router.get('/', async (req, res) => {
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', async (req, res) => {
+router.post('/', async (req: AuthenticatedRequest, res) => {
   const { error } = serviceSchema.validate(req.body);
 
   if (error) {
@@ -215,7 +216,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const newService = await addService(req.body);
+    const newService = await addService(req.body, req.userId);
     res.status(201).json({
       status: 'success',
       message: 'Service created successfully',

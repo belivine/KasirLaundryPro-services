@@ -1,6 +1,7 @@
 import express from "express";
 import { noteSchema } from "./types";
 import { addNote, GetNote, updateNote } from "./controller";
+import { AuthenticatedRequest } from "src/middlewares";
 
 const router = express.Router();
 
@@ -63,9 +64,9 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Note'
  */
-router.get("/", async (req, res) => {
+router.get("/", async (req: AuthenticatedRequest, res) => {
   try {
-    const data = await GetNote(); // Ensure GetNote() returns a single note object
+    const data = await GetNote(req.userId); // Ensure GetNote() returns a single note object
     if (Array.isArray(data)) {
       // If GetNote() returns an array, handle it appropriately, e.g., return the first item
       res.json(data[0] || null);
@@ -101,7 +102,7 @@ router.get("/", async (req, res) => {
  *       400:
  *         description: Bad request, invalid input
  */
-router.put("/", async (req, res) => {
+router.put("/", async (req: AuthenticatedRequest, res) => {
   if (!req.body || typeof req.body !== "object") {
     return res.status(400).json({
       errors: [
@@ -130,7 +131,7 @@ router.put("/", async (req, res) => {
 
   try {
     // Attempt to get the latest note
-    const latestNote = await GetNote();
+    const latestNote = await GetNote(req.userId);
 
     if (latestNote) {
       // Update the latest note
@@ -142,7 +143,7 @@ router.put("/", async (req, res) => {
       });
     } else {
       // Create a new note
-      const newNote = await addNote({ notes });
+      const newNote = await addNote({ notes }, req.userId);
       res.status(201).json({
         status: "success",
         message: "Note created successfully",

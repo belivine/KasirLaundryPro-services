@@ -5,17 +5,17 @@ import { Service, Duration } from "./types";
 * Retrieve all services with their IDs and names from the database.
 * @returns {Promise<{ id: number, name: string }[]>} - A promise that resolves to an array of services with their IDs and names.
 */
-export async function getServices(filter: string | null): Promise<{ id: number, name: string }[]> {
+export async function getServices(filter: string | null, merchant_id?: string): Promise<{ id: number, name: string }[]> {
  const client = await pool.connect();
  try {
    const query = `
      SELECT id, name
      FROM service
-     WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%')
+     WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%') AND merchant_id = $2
      ORDER BY created_at DESC
    `;
 
-   const result = await client.query(query, [filter]);
+   const result = await client.query(query, [filter,merchant_id]);
    return result.rows;
  } finally {
    client.release();
@@ -80,15 +80,15 @@ export async function getServiceById(serviceId: string): Promise<Service | null>
  * @param service - The service data to add.
  * @returns {Promise<Service>} - A promise that resolves to the newly created service.
  */
-export async function addService(service: Omit<Service, 'id'>): Promise<Service> {
+export async function addService(service: Omit<Service, 'id'>, merchant_id?: string): Promise<Service> {
   const client = await pool.connect();
   try {
     const { name, unit, durations } = service;
     const query = `
-      INSERT INTO service (name, unit)
-      VALUES ($1, $2) RETURNING id;
+      INSERT INTO service (name, unit, merchant_id)
+      VALUES ($1, $2, $3) RETURNING id;
     `;
-    const values = [name, unit];
+    const values = [name, unit, merchant_id];
     const result = await client.query(query, values);
     const newServiceId = result.rows[0].id;
 

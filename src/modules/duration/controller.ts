@@ -5,17 +5,18 @@ import { Duration, DurationType } from "./types";
  * Retrieve all durations from the database.
  * @returns {Promise<Duration[]>} - A promise that resolves to an array of durations.
  */
-export async function getDurations(filter: string | null): Promise<Duration[]> {
+export async function getDurations(filter: string | null, merchant_id?: string): Promise<Duration[]> {
   const client = await pool.connect();
   try {
     const query = `
       SELECT * FROM duration 
-      WHERE ($1::text IS NULL OR duration.name ILIKE '%' || $1 || '%')
+      WHERE (($1::text IS NULL OR duration.name ILIKE '%' || $1 || '%')
       OR ($1::text IS NULL OR duration.duration::text ILIKE '%' || $1 || '%')
-      OR ($1::text IS NULL OR duration.type::text ILIKE '%' || $1 || '%')
+      OR ($1::text IS NULL OR duration.type::text ILIKE '%' || $1 || '%'))
+      AND merchant_id = $2
       ORDER BY created_at DESC
     `
-    const res = await client.query(query, [filter]);
+    const res = await client.query(query, [filter, merchant_id]);
     return res.rows;
   } finally {
     client.release();
@@ -42,15 +43,15 @@ export async function getDurationById(id: string): Promise<Duration | null> {
  * @param duration - The duration data to add. Excludes 'id' as it's auto-generated.
  * @returns {Promise<Duration>} - A promise that resolves to the newly created duration.
  */
-export async function addDuration(duration: Omit<Duration, 'id'>): Promise<Duration> {
+export async function addDuration(duration: Omit<Duration, 'id'>, merchant_id?: string): Promise<Duration> {
   const client = await pool.connect();
   try {
     const { name, duration: value, type } = duration;
     const query = `
-      INSERT INTO duration (name, duration, type)
-      VALUES ($1, $2, $3) RETURNING *;
+      INSERT INTO duration (name, duration, type, merchant_id)
+      VALUES ($1, $2, $3, $4) RETURNING *;
     `;
-    const values = [name, value, type];
+    const values = [name, value, type, merchant_id];
     const result = await client.query(query, values);
     return result.rows[0];
   } finally {

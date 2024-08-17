@@ -320,7 +320,10 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
   if (req.user) {
     const user = req.user as any; // TypeScript casting
-    res.cookie("auth_token", user.token, { httpOnly: true });
+    const token = jwt.sign({ id: user.id }, "secret_key", {
+      expiresIn: "1h",
+    });
+    res.cookie("auth_token", token, { httpOnly: true });
     res.redirect("https://merchant-app-fe.vercel.app/"); // Replace with your frontend domain
   } else {
     res.status(500).json({ message: "Authentication failed" });

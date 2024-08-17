@@ -6,6 +6,11 @@ interface AuthenticatedRequest extends Request {
 }
 
 const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  // Skip authentication for specific routes if needed
+  if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/docs')) {
+    return next();
+  }
+
   const token = req.cookies.auth_token || req.headers['authorization'];
 
   if (!token) {

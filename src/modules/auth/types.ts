@@ -36,10 +36,11 @@ export const LoginSchema = Joi.object({
 });
 
 export interface SignUpInput {
-    password: string;
+    password?: string;
     email: string;
     name: string;
     phone_number?: string;
+    oauth?: boolean;
 }
 
 export const SignUpSchema = Joi.object({

@@ -3,7 +3,7 @@ import { ChangePasswordSchema, LoginSchema, SignUpSchema } from "./types";
 import { addUser, changeUserPassword, getUserByEmail } from "./controller";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import passport from "./passportConfig";
 const router = express.Router();
 
 /**
@@ -88,9 +88,6 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Login berhasil."
- *                 token:
- *                   type: string
- *                   example: "xxxxx.yyyyy.zzzzz"
  *       '401':
  *         description: Unauthorized, invalid credentials
  *         content:
@@ -123,7 +120,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(200).json({ message: "Login berhasil.", token: token});
+    res.status(200).json({ message: "Login berhasil."});
   } catch (err:any) {
     res
       .status(500)
@@ -173,9 +170,6 @@ router.post("/login", async (req, res) => {
  *                 message:
  *                   type: string
  *                   example: "Signup berhasil."
- *                 token:
- *                   type: string
- *                   example: "xxxxx.yyyyy.zzzzz"
  *       '400':
  *         description: Bad request, invalid input
  *         content:
@@ -213,7 +207,7 @@ router.post("/signup", async (req, res) => {
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(201).json({ message: "Signup berhasil.", token: token});
+    res.status(201).json({ message: "Signup berhasil."});
   } catch (err: any) {
     res
       .status(500)
@@ -293,6 +287,43 @@ router.post("/change-password", async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully.' });
   } catch (err: any) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+
+/**
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     summary: Initiates Google OAuth authentication
+ *     description: Redirects to Google for authentication
+ *     tags: [Auth]
+ *     responses:
+ *       '302':
+ *         description: Redirects to Google for authentication
+ */
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+/**
+ * @swagger
+ * /auth/google/callback:
+ *   get:
+ *     summary: Handles Google OAuth callback
+ *     description: Handles the callback from Google after authentication
+ *     tags: [Auth]
+ *     responses:
+ *       '302':
+ *         description: Redirects to the frontend application with an authentication token
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
+  if (req.user) {
+    const user = req.user as any; // TypeScript casting
+    res.cookie("auth_token", user.token, { httpOnly: true });
+    res.redirect("https://merchant-app-fe.vercel.app/"); // Replace with your frontend domain
+  } else {
+    res.status(500).json({ message: "Authentication failed" });
   }
 });
 

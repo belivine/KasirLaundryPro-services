@@ -1,35 +1,34 @@
-import express, { Router, Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, Router } from "express";
 import serverless from "serverless-http";
-import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import cors, { CorsOptions } from 'cors';
-import authRoutes from '../../src/modules/auth/routes';
-import TransactionRoutes from '../../src/modules/transaction/routes';
-import customerRoutes from '../../src/modules/customer/routes';
-import serviceRoutes from '../../src/modules/services/routes';
-import durationRoutes from '../../src/modules/duration/routes';
+import fs from "fs";
+import authRoutes from "../../src/modules/auth/routes";
+import TransactionRoutes from "../../src/modules/transaction/routes";
+import customerRoutes from "../../src/modules/customer/routes";
+import serviceRoutes from "../../src/modules/services/routes";
+import durationRoutes from "../../src/modules/duration/routes";
 import emailSupport from "../../src/modules/email-support/routes";
-import notesRoutes from '../../src/modules/notes/routes';
+import notesRoutes from "../../src/modules/notes/routes";
 import cookieParser from 'cookie-parser';
-// import authMiddleware from "../../src/middlewares";
+import authMiddleware from "../../src/middlewares";
+import session from "express-session";
+import passport from "../../src/modules/auth/passportConfig";
+
 const app = express();
-app.use(express.json());
 
 // CORS configuration
-const allowedOrigins = [
-  'https://merchant-app-fe.vercel.app',
-  'https://cors.redoc.ly'
-];
+const allowedOrigins = ['https://merchant-app-fe.vercel.app'];
 const localhostRegex = /^http:\/\/localhost(:\d+)?$/;
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin) || localhostRegex.test(origin)) {
       callback(null, true);
     } else {
-      console.log(origin);
       callback(null, true);
       // callback(new Error('Not allowed by CORS'));
     }
@@ -38,20 +37,34 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(express.json());
+// Session configuration (necessary for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log('Middleware Check:', req.body);
+  next();
+});
 
 const port = 3000;
-
 const routerV1 = Router();
 
-// Swagger configuration
+// Swagger configuration and setup
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Kasir Laundry Pro",
       version: "1.0.0",
-      description:
-        "API Routes and schema details of Kasir Laundry Pro Services",
+      description: "API Routes and schema details of Kasir Laundry Pro Services",
     },
     servers: [
       {
@@ -59,21 +72,21 @@ const options = {
       },
     ]
   },
-  apis: ["./src/modules/**/*.ts"], // Path to the API routes or files to be documented
+  apis: ["./src/modules/**/*.ts"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
+fs.writeFileSync('swagger.yaml', JSON.stringify(swaggerSpec, null, 2));
 
-// Serve Swagger UI
 routerV1.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 routerV1.use("/docs-json", (req: Request, res: Response) => {
-    res.json(swaggerSpec)
+  res.json(swaggerSpec)
 });
 
-// Routes
+// Routes setup
 routerV1.use("/auth", authRoutes);
 
-// app.use(authMiddleware);
+app.use(authMiddleware);
 routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);
@@ -82,7 +95,6 @@ routerV1.use("/duration", durationRoutes);
 routerV1.use("/email-support", emailSupport);
 app.use("/api/", routerV1);
 
-// Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

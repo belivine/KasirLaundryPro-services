@@ -13,6 +13,8 @@ import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
 import cookieParser from 'cookie-parser';
 import authMiddleware from "./middlewares";
+import session from "express-session";
+import passport from "./modules/auth/passportConfig";
 
 const app = express();
 
@@ -35,6 +37,16 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
+// Session configuration (necessary for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log('Middleware Check:', req.body);

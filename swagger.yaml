@@ -53,10 +53,6 @@
                     "message": {
                       "type": "string",
                       "example": "Login berhasil."
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "xxxxx.yyyyy.zzzzz"
                     }
                   }
                 }
@@ -134,10 +130,6 @@
                     "message": {
                       "type": "string",
                       "example": "Signup berhasil."
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "xxxxx.yyyyy.zzzzz"
                     }
                   }
                 }
@@ -247,6 +239,37 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "summary": "Initiates Google OAuth authentication",
+        "description": "Redirects to Google for authentication",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to Google for authentication"
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "summary": "Handles Google OAuth callback",
+        "description": "Handles the callback from Google after authentication",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to the frontend application with an authentication token"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

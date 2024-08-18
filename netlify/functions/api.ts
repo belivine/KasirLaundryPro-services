@@ -10,6 +10,7 @@ import serviceRoutes from "../../src/modules/services/routes";
 import durationRoutes from "../../src/modules/duration/routes";
 import emailSupport from "../../src/modules/email-support/routes";
 import notesRoutes from "../../src/modules/notes/routes";
+import users from "../../src/modules/user/routes";
 import cookieParser from 'cookie-parser';
 import authMiddleware from "../../src/middlewares";
 import session from "express-session";
@@ -86,6 +87,7 @@ routerV1.use("/docs-json", (req: Request, res: Response) => {
 routerV1.use("/auth", authRoutes);
 
 app.use(authMiddleware);
+routerV1.use("/user", users);
 routerV1.use("/transaction", TransactionRoutes);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);

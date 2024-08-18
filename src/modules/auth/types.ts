@@ -13,6 +13,15 @@ export interface User {
     updated_at: string; // ISO date string
     id: string; // UUID v4
 }
+
+export interface UserDetail {
+    name: string;
+    email: string;
+    phone_number?: string;
+    logo?: string;
+    address?: string;
+    id: string; // UUID v4
+}
   
 export interface LoginInput {
     password: string;

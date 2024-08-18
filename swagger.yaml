@@ -1059,6 +1059,146 @@
           }
         }
       }
+    },
+    "/user/upload-logo": {
+      "post": {
+        "summary": "Uploads a temporary logo file",
+        "description": "Uploads a logo file to Supabase Storage and returns the file path.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The logo file to upload"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filePath": {
+                      "type": "string",
+                      "description": "The path of the uploaded file in Supabase Storage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file uploaded"
+          },
+          "500": {
+            "description": "Failed to upload file"
+          }
+        }
+      }
+    },
+    "/user/details": {
+      "get": {
+        "summary": "Retrieve user details",
+        "description": "Fetches the details of a user by their ID.",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "put": {
+        "summary": "Update user details and optionally submit logo",
+        "description": "Updates user details including optional logo upload. If a logo file path is provided, it will be moved from temporary to final location.",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the user to update.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the user"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Email address of the user"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "description": "Phone number of the user"
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "Address of the user"
+                  },
+                  "logo": {
+                    "type": "string",
+                    "description": "Path of the uploaded logo in Supabase Storage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User details updated successfully"
+          },
+          "400": {
+            "description": "Missing required fields or invalid input"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Failed to update user details or process logo"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1072,11 +1212,13 @@
           },
           "name": {
             "type": "string",
-            "description": "User's name"
+            "description": "Name of the user",
+            "example": "John Doe"
           },
           "email": {
             "type": "string",
-            "description": "User's email address"
+            "description": "Email address of the user",
+            "example": "john.doe@example.com"
           },
           "oauth": {
             "type": "boolean",
@@ -1088,15 +1230,21 @@
           },
           "phone_number": {
             "type": "string",
-            "description": "User's phone number"
+            "description": "Phone number of the user (nullable)",
+            "nullable": true,
+            "example": "+12345678901"
           },
           "logo": {
             "type": "string",
-            "description": "URL to the user's logo or profile picture"
+            "description": "URL of the user's logo (nullable)",
+            "nullable": true,
+            "example": "https://example.com/logo.png"
           },
           "address": {
             "type": "string",
-            "description": "User's address"
+            "description": "Address of the user (nullable)",
+            "nullable": true,
+            "example": "123 Main St, Springfield"
           },
           "created_at": {
             "type": "string",
@@ -1108,7 +1256,11 @@
             "format": "date-time",
             "description": "Timestamp of when the user was last updated"
           }
-        }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
       },
       "Customer": {
         "type": "object",
@@ -1700,6 +1852,37 @@
             "$ref": "#/components/schemas/TransactionDetail"
           }
         }
+      },
+      "UserRequestBody": {
+        "type": "object",
+        "required": [
+          "name",
+          "email"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the user",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the user",
+            "example": "john.doe@example.com"
+          },
+          "phone_number": {
+            "type": "string",
+            "nullable": true,
+            "description": "Phone number of the user (nullable)",
+            "example": "+12345678901"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Address of the user (nullable)",
+            "example": "123 Main St, Springfield"
+          }
+        }
       }
     }
   },
@@ -1731,6 +1914,10 @@
     {
       "name": "Transaction",
       "description": "Transaction management APIs"
+    },
+    {
+      "name": "User",
+      "description": "User management APIs"
     }
   ]
 }

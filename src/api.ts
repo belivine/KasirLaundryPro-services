@@ -11,6 +11,7 @@ import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
 import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
+import users from "./modules/user/routes";
 import cookieParser from 'cookie-parser';
 import authMiddleware from "./middlewares";
 import session from "express-session";
@@ -29,7 +30,8 @@ const corsOptions: CorsOptions = {
     if (allowedOrigins.includes(origin) || localhostRegex.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, true);
+      // callback(new Error('Not allowed by CORS'));
     }
   }
 };
@@ -87,6 +89,7 @@ routerV1.use("/auth", authRoutes);
 
 routerV1.use(authMiddleware);
 routerV1.use("/transaction", TransactionRoutes);
+routerV1.use("/user", users);
 routerV1.use("/customer", customerRoutes);
 routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);

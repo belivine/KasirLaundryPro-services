@@ -62,6 +62,11 @@ export async function updateUserDetails(
       params.push(userData.name);
     }
 
+    if (userData.status) {
+      setClauses.push(`status = $${index++}`);
+      params.push(userData.status);
+    }
+
     if (userData.email) {
       setClauses.push(`email = $${index++}`);
       params.push(userData.email);

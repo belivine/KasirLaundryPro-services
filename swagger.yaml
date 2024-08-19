@@ -274,6 +274,37 @@
         }
       }
     },
+    "/verify-email": {
+      "get": {
+        "summary": "Verify user email",
+        "tags": [
+          "Auth"
+        ],
+        "description": "Validates the email verification token and updates the user's status to 'verified'.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The email verification token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email verified successfully."
+          },
+          "400": {
+            "description": "Invalid or expired verification link."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
     "/customer": {
       "get": {
         "summary": "Get all customers",

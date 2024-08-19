@@ -1,3 +1,5 @@
+import { JwtPayload } from "jsonwebtoken";
+
 const Joi = require('joi');
 
 export interface User {
@@ -12,6 +14,7 @@ export interface User {
     created_at: string; // ISO date string
     updated_at: string; // ISO date string
     id: string; // UUID v4
+    status?: string
 }
 
 export interface UserDetail {
@@ -50,6 +53,7 @@ export interface SignUpInput {
     name: string;
     phone_number?: string;
     oauth?: boolean;
+    status?: string;
 }
 
 export const SignUpSchema = Joi.object({
@@ -88,3 +92,7 @@ export const ChangePasswordSchema = Joi.object({
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(6).required(),
   });
+
+  export interface CustomJwtPayload extends JwtPayload {
+    id: string;
+  }

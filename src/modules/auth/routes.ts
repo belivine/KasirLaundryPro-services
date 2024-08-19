@@ -1,9 +1,10 @@
 import express from "express";
-import { ChangePasswordSchema, LoginSchema, SignUpSchema } from "./types";
+import { ChangePasswordSchema, CustomJwtPayload, LoginSchema, SignUpSchema } from "./types";
 import { addUser, changeUserPassword, getUserByEmail } from "./controller";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
+import { getUserDetails, updateUserDetails, updateUserProfile } from "../user/controller";
 const router = express.Router();
 
 /**
@@ -329,5 +330,63 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     res.status(500).json({ message: "Authentication failed" });
   }
 });
+
+/**
+ * @swagger
+ * /verify-email:
+ *   get:
+ *     summary: Verify user email
+ *     tags: [Auth]
+ *     description: Validates the email verification token and updates the user's status to 'verified'.
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The email verification token
+ *     responses:
+ *       200:
+ *         description: Email verified successfully.
+ *       400:
+ *         description: Invalid or expired verification link.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get("/verify-email", async (req, res) => {
+  const { token } = req.query;
+
+  // Check if token is a string
+  if (typeof token !== 'string') {
+    return res.status(400).json({ message: "Invalid or missing token." });
+  }
+
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not defined');
+    }
+
+    const decoded = jwt.verify(token, jwtSecret) as CustomJwtPayload;
+    if (!decoded.id) {
+      return res.status(400).json({ message: "Invalid verification link." });
+    }
+
+    const userId = decoded.id;
+
+    const user = await getUserDetails(userId);
+    if (!user) {
+      return res.status(400).json({ message: "Invalid verification link." });
+    }
+
+    // Update user status to 'verified'
+    await updateUserDetails(userId, { status: 'verified' });
+
+    res.status(200).json({ message: "Email verified successfully!" });
+  } catch (err: any) {
+    res.status(400).json({ message: "Invalid or expired verification link.", error: err.message });
+  }
+});
+
 
 export default router;

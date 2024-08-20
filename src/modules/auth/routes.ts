@@ -358,7 +358,7 @@ router.get("/verify-email", async (req, res) => {
 
   // Check if token is a string
   if (typeof token !== 'string') {
-    return res.status(400).json({ message: "Invalid or missing token." });
+    return res.status(400).json({ message: "Token verifikasi tidak sesuai." });
   }
 
   try {
@@ -369,22 +369,22 @@ router.get("/verify-email", async (req, res) => {
 
     const decoded = jwt.verify(token, jwtSecret) as CustomJwtPayload;
     if (!decoded.id) {
-      return res.status(400).json({ message: "Invalid verification link." });
+      return res.status(400).json({ message: "Salah Link Verifikasi." });
     }
 
     const userId = decoded.id;
 
     const user = await getUserDetails(userId);
     if (!user) {
-      return res.status(400).json({ message: "Invalid verification link." });
+      return res.status(400).json({ message: "Salah Link Verifikasi." });
     }
 
     // Update user status to 'verified'
     await updateUserDetails(userId, { status: 'verified' });
 
-    res.status(200).json({ message: "Email verified successfully!" });
+    res.status(200).json({ message: "Email sudah terverifikasi" });
   } catch (err: any) {
-    res.status(400).json({ message: "Invalid or expired verification link.", error: err.message });
+    res.status(400).json({ message: "Link verifikasi sudah kedaluarsa.", error: err.message });
   }
 });
 

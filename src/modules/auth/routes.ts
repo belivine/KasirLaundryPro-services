@@ -131,6 +131,49 @@ router.post("/login", async (req, res) => {
 
 /**
  * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logs out a user
+ *     description: Logs out a user and invalidates their session or token
+ *     tags: [Auth]
+ *     responses:
+ *       '200':
+ *         description: Successful logout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Logout berhasil."
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Terjadi kesalahan pada server."
+ */
+router.post("/logout", async (req, res) => {
+  try {
+    req.session.destroy(err => {
+      if (err) {
+        return res.status(500).json({ message: "Terjadi kesalahan pada server." });
+      }
+      res.status(200).json({ message: "Logout berhasil." });
+    });
+  } catch (err: any) {
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
+  }
+});
+
+
+/**
+ * @swagger
  * /auth/signup:
  *   post:
  *     summary: Signs up a new user

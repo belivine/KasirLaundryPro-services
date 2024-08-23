@@ -90,7 +90,16 @@ export async function updateDuration(id: string, duration: Omit<Duration, 'id'>)
 export async function deleteDuration(id: string): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query("DELETE FROM duration WHERE id = $1", [id]);
+    const query = `
+      SELECT * FROM service_duration WHERE duration = $1
+    `;
+    const services = await client.query(query, [id]);
+
+    if (services.rowCount !== null && services.rowCount > 0) {
+      throw new Error("Duration is used by a service");
+    } else {
+      await client.query("DELETE FROM duration WHERE id = $1", [id]);
+    }
   } finally {
     client.release();
   }

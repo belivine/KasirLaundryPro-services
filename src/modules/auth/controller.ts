@@ -25,12 +25,12 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 export async function addUser(user: Omit<SignUpInput, 'id'>): Promise<User> {
   const client = await pool.connect();
   try {
-    const { name, email, password, phone_number, oauth } = user;
+    const { name, email, password, phone_number, oauth, status} = user;
     const query = `
-      INSERT INTO users (name, email, password, phone_number, oauth)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *;
+      INSERT INTO users (name, email, password, phone_number, oauth, status)
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
     `;
-    const values = [name, email, password, phone_number, oauth];
+    const values = [name, email, password, phone_number, oauth, status];
     const result = await client.query(query, values);
     return result.rows[0];
   } finally {

@@ -4,8 +4,20 @@ import { addUser, changeUserPassword, getUserByEmail } from "./controller";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
-import { getUserDetails, updateUserDetails, updateUserProfile } from "../user/controller";
+import { getUserDetails, updateUserDetails } from "../user/controller";
+import nodemailer from 'nodemailer';
+
 const router = express.Router();
+// Create a transporter object using Outlook's SMTP transport
+const transporter = nodemailer.createTransport({
+  host: 'smtp-mail.outlook.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.email,
+    pass: process.env.email_password,
+  },
+});
 
 /**
  * @swagger
@@ -245,17 +257,33 @@ router.post("/signup", async (req, res) => {
       email,
       password: hashedPassword,
       phone_number,
+      status: 'pending', // Initially set user status to 'pending'
     });
+
+    // Generate verification token
+    const verificationToken = jwt.sign({ id: newUser.id }, "verification_secret_key", {
+      expiresIn: "1d",
+    });
+
+    // Send verification email
+    const verificationUrl = `https://kasirlaundrypro.netlify.app/api/auth/verify-email?token=${verificationToken}`;
+    const mailOptions = {
+      from: 'Cuci Bayar GO <cucibayargo@outlook.com>',
+      to: email,
+      subject: 'Verify Your Email Address',
+      text: `Please verify your email address by clicking the following link: ${verificationUrl}`,
+      html: `<p>Please verify your email address by clicking the following link: <a href="${verificationUrl}">Verify Email</a></p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
 
     const token = jwt.sign({ id: newUser.id }, "secret_key", {
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(201).json({ message: "Signup berhasil."});
+    res.status(201).json({ message: "Signup berhasil. Please check your email for verification link."});
   } catch (err: any) {
-    res
-      .status(500)
-      .json({ message: "Terjadi kesalahan pada server.", error: err.message });
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
   }
 });
 
@@ -363,12 +391,12 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
  */
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
   if (req.user) {
-    const user = req.user as any; // TypeScript casting
+    const user = req.user as any;
     const token = jwt.sign({ id: user.id }, "secret_key", {
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
-    res.redirect("https://merchant-app-fe.vercel.app/"); // Replace with your frontend domain
+    res.redirect("https://merchant-app-fe.vercel.app/"); 
   } else {
     res.status(500).json({ message: "Authentication failed" });
   }
@@ -376,7 +404,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 /**
  * @swagger
- * /verify-email:
+ * /auth/verify-email:
  *   get:
  *     summary: Verify user email
  *     tags: [Auth]
@@ -405,11 +433,7 @@ router.get("/verify-email", async (req, res) => {
   }
 
   try {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is not defined');
-    }
-
+    const jwtSecret = "verification_secret_key"; // Use the same secret as in the signup endpoint
     const decoded = jwt.verify(token, jwtSecret) as CustomJwtPayload;
     if (!decoded.id) {
       return res.status(400).json({ message: "Salah Link Verifikasi." });
@@ -418,18 +442,17 @@ router.get("/verify-email", async (req, res) => {
     const userId = decoded.id;
 
     const user = await getUserDetails(userId);
-    if (!user) {
-      return res.status(400).json({ message: "Salah Link Verifikasi." });
+    if (!user || user.status === 'verified') {
+      return res.status(400).json({ message: "Salah Link Verifikasi atau email sudah terverifikasi." });
     }
 
     // Update user status to 'verified'
     await updateUserDetails(userId, { status: 'verified' });
 
-    res.status(200).json({ message: "Email sudah terverifikasi" });
+    res.redirect("https://merchant-app-fe.vercel.app/"); 
   } catch (err: any) {
     res.status(400).json({ message: "Link verifikasi sudah kedaluarsa.", error: err.message });
   }
 });
-
 
 export default router;

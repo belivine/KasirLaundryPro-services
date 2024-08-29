@@ -20,22 +20,22 @@ export const transactionSchema = Joi.object({
   customer: Joi.string()
     .uuid()
     .required(),
-  
+
   duration: Joi.string()
     .uuid()
     .required(),
-  
+
   status: Joi.string()
     .valid('Diproses', 'Selesai', 'Siap Diambil')
     .required(),
-  
+
   items: Joi.array()
     .items(
       Joi.object({
         service: Joi.string()
           .uuid()
           .required(),
-        
+
         qty: Joi.number()
           .integer()
           .positive()

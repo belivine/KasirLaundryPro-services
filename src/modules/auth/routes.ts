@@ -136,9 +136,15 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
-    res.cookie("auth_token", token, { httpOnly: true });
+
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: true, 
+      sameSite: 'none', 
+    });
+
     res.status(200).json({ message: "Login berhasil."});
-  } catch (err:any) {
+  } catch (err: any) {
     res
       .status(500)
       .json({ message: "Terjadi kesalahan pada server.", error: err.message });
@@ -176,6 +182,14 @@ router.post("/login", async (req, res) => {
  */
 router.post("/logout", async (req, res) => {
   try {
+    // Clear the authentication cookie
+    res.cookie("auth_token", "", {
+      httpOnly: true,
+      secure: true, 
+      sameSite: 'none', 
+      expires: new Date(0), 
+    });
+
     req.session.destroy(err => {
       if (err) {
         return res.status(500).json({ message: "Terjadi kesalahan pada server." });

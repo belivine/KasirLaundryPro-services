@@ -103,7 +103,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -136,7 +136,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
     return res.status(400).json({
       errors: [{
         type: 'body',
-        msg: 'Request body is missing or invalid',
+        msg: 'Isi permintaan hilang atau tidak valid',
       }],
     });
   }
@@ -156,12 +156,12 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
   const { id, name, duration, type } = req.body;
   try {
     const newDuration = await addDuration({ name, duration, type }, req.userId);
-    res.status(201).json({ status: 'success', message: 'Duration created successfully', data: newDuration });
+    res.status(201).json({ status: 'success', message: 'Durasi berhasil', data: newDuration });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -188,7 +188,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
  *             $ref: '#/components/schemas/DurationRequestBody'
  *     responses:
  *       200:
- *         description: Duration updated successfully
+ *         description: Durasi berhasil diperbarui
  *         content:
  *           application/json:
  *             schema:
@@ -196,14 +196,14 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
  *       400:
  *         description: Bad request, invalid input
  *       404:
- *         description: Duration not found
+ *         description: Durasi tidak ditemukan
  */
 router.put('/:id', async (req, res) => {
   if (!req.body || typeof req.body !== 'object') {
     return res.status(400).json({
       errors: [{
         type: 'body',
-        msg: 'Request body is missing or invalid',
+        msg: 'Isi permintaan hilang atau tidak valid',
       }],
     });
   }
@@ -224,16 +224,16 @@ router.put('/:id', async (req, res) => {
   const durationId = req.params.id;
   try {
     const updatedDuration = await updateDuration(durationId, { name, duration, type });
-    res.json({ status: 'success', message: 'Duration updated successfully', data: updatedDuration });
+    res.json({ status: 'success', message: 'Durasi berhasil diperbarui', data: updatedDuration });
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
-        res.status(404).json({ error: 'Duration not found' });
+        res.status(404).json({ error: 'Durasi tidak ditemukan' });
       } else {
         res.status(500).json({ error: error.message });
       }
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -267,7 +267,7 @@ router.put('/:id', async (req, res) => {
  *                   type: string
  *                   example: "Duration deleted successfully"
  *       404:
- *         description: Duration not found
+ *         description: Durasi tidak ditemukan
  */
 router.delete('/:id', async (req, res) => {
   const durationId = req.params.id;
@@ -275,17 +275,17 @@ router.delete('/:id', async (req, res) => {
     await deleteDuration(durationId);
     res.status(200).json({
       status: 'success',
-      message: 'Duration deleted successfully'
+      message: 'Durasi berhasil dihapus.'
     });
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
-        res.status(404).json({ error: 'Duration not found' });
+        res.status(404).json({ error: 'Durasi tidak ditemukan' });
       } else {
         res.status(500).json({ error: error.message });
       }
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -312,7 +312,7 @@ router.delete('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/DurationAll'
  *       404:
- *         description: Duration not found
+ *         description: Durasi tidak ditemukan
  */
 router.get('/:id', async (req, res) => {
   const durationId = req.params.id;
@@ -320,14 +320,14 @@ router.get('/:id', async (req, res) => {
   try {
     const duration = await getDurationById(durationId);
     if (!duration) {
-      return res.status(404).json({ error: 'Duration not found' });
+      return res.status(404).json({ error: 'Durasi tidak ditemukan' });
     }
     res.json(duration);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });

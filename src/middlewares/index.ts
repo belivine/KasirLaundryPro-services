@@ -14,7 +14,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   const token = req.cookies.auth_token || req.headers['authorization'];
 
   if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    return res.status(401).json({ message: 'Akses ditolak. Token tidak sesuai' });
   }
 
   try {
@@ -25,7 +25,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   } catch (error) {
     console.log(error);
     
-    res.status(400).json({ message: 'Invalid token.' });
+    res.status(400).json({ message: 'Token tidak ditemukan' });
   }
 };
 

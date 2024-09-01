@@ -125,12 +125,12 @@ const router = express.Router();
  *           example: "success"
  *         message:
  *           type: string
- *           example: "Service created successfully"
+ *           example: "Layanan berhasil dibuat"
  *         data:
  *           $ref: '#/components/schemas/Service'
  *       example:
  *         status: "success"
- *         message: "Service created successfully"
+ *         message: "Layanan berhasil dibuat"
  *         data:
  *           id: "1"
  *           name: "Dry Cleaning"
@@ -181,7 +181,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
     const services = await getServices(filter, req.userId);
     res.json(services);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve services' });
+    res.status(500).json({ error: 'Gagal mengambil layanan' });
   }
 });
 
@@ -200,7 +200,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
  *             $ref: '#/components/schemas/ServiceRequestBody'
  *     responses:
  *       201:
- *         description: Service created successfully
+ *         description: Layanan berhasil dibuat
  *         content:
  *           application/json:
  *             schema:
@@ -219,12 +219,12 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
     const newService = await addService(req.body, req.userId);
     res.status(201).json({
       status: 'success',
-      message: 'Service created successfully',
+      message: 'Layanan berhasil dibuat',
       data: newService
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Failed to create service' });
+    res.status(500).json({ error: 'Gagal membuat layanan' });
   }
 });
 
@@ -257,7 +257,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
  *       400:
  *         description: Bad request, invalid input
  *       404:
- *         description: Service not found
+ *         description: Layanan tidak ditemukan
  */
 router.put('/:id', async (req, res) => {
   const { error } = serviceSchema.validate(req.body);
@@ -270,11 +270,11 @@ router.put('/:id', async (req, res) => {
     const updatedService = await updateService(req.params.id, req.body);
     res.json({
       status: 'success',
-      message: 'Service updated successfully',
+      message: 'Layanan berhasil diubah',
       data: updatedService
     });
   } catch (error) {
-    res.status(404).json({ error: 'Service not found' });
+    res.status(404).json({ error: 'Layanan tidak ditemukan' });
   }
 });
 
@@ -295,7 +295,7 @@ router.put('/:id', async (req, res) => {
  *       204:
  *         description: Service deleted successfully
  *       404:
- *         description: Service not found
+ *         description: Layanan tidak ditemukan
  */
 router.delete('/:id', async (req, res) => {
   try {
@@ -305,7 +305,7 @@ router.delete('/:id', async (req, res) => {
       message: 'Service deleted successfully'
     });
   } catch (error) {
-    res.status(404).json({ error: 'Service not found' });
+    res.status(404).json({ error: 'Layanan tidak ditemukan' });
   }
 });
 
@@ -331,7 +331,7 @@ router.delete('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Service'
  *       404:
- *         description: Service not found
+ *         description: Layanan tidak ditemukan
  */
 router.get('/:id', async (req, res) => {
   const serciveId = req.params.id;
@@ -339,14 +339,14 @@ router.get('/:id', async (req, res) => {
   try {
     const duration = await getServiceById(serciveId);
     if (!duration) {
-      return res.status(404).json({ error: 'Service not found' });
+      return res.status(404).json({ error: 'Layanan tidak ditemukan' });
     }
     res.json(duration);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Terjadi kesalahan server' });
     }
   }
 });

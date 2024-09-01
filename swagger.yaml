@@ -312,7 +312,7 @@
             "description": "Redirects to the frontend application with an authentication token"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Terjadi kesalahan server"
           }
         }
       }
@@ -343,7 +343,7 @@
             "description": "Invalid or expired verification link."
           },
           "500": {
-            "description": "Internal server error."
+            "description": "Terjadi kesalahan server."
           }
         }
       }
@@ -617,7 +617,7 @@
         },
         "responses": {
           "200": {
-            "description": "Duration updated successfully",
+            "description": "Durasi berhasil diperbarui",
             "content": {
               "application/json": {
                 "schema": {
@@ -630,7 +630,7 @@
             "description": "Bad request, invalid input"
           },
           "404": {
-            "description": "Duration not found"
+            "description": "Durasi tidak ditemukan"
           }
         }
       },
@@ -673,7 +673,7 @@
             }
           },
           "404": {
-            "description": "Duration not found"
+            "description": "Durasi tidak ditemukan"
           }
         }
       },
@@ -706,7 +706,7 @@
             }
           },
           "404": {
-            "description": "Duration not found"
+            "description": "Durasi tidak ditemukan"
           }
         }
       }
@@ -849,7 +849,7 @@
         },
         "responses": {
           "201": {
-            "description": "Service created successfully",
+            "description": "Layanan berhasil dibuat",
             "content": {
               "application/json": {
                 "schema": {
@@ -906,7 +906,7 @@
             "description": "Bad request, invalid input"
           },
           "404": {
-            "description": "Service not found"
+            "description": "Layanan tidak ditemukan"
           }
         }
       },
@@ -931,7 +931,7 @@
             "description": "Service deleted successfully"
           },
           "404": {
-            "description": "Service not found"
+            "description": "Layanan tidak ditemukan"
           }
         }
       },
@@ -964,7 +964,7 @@
             }
           },
           "404": {
-            "description": "Service not found"
+            "description": "Layanan tidak ditemukan"
           }
         }
       }
@@ -1176,10 +1176,10 @@
             }
           },
           "400": {
-            "description": "No file uploaded"
+            "description": "Tidak ada file yang diunggah"
           },
           "500": {
-            "description": "Failed to upload file"
+            "description": "Gagal mengunggah file"
           }
         }
       }
@@ -1203,7 +1203,7 @@
             }
           },
           "404": {
-            "description": "User not found"
+            "description": "User tidak ditemukan"
           }
         }
       }
@@ -1260,13 +1260,13 @@
         },
         "responses": {
           "200": {
-            "description": "User details updated successfully"
+            "description": "Rincian pengguna berhasil diperbarui"
           },
           "400": {
             "description": "Missing required fields or invalid input"
           },
           "404": {
-            "description": "User not found"
+            "description": "Pengguna tidak ditemukan"
           },
           "500": {
             "description": "Failed to update user details or process logo"
@@ -1582,7 +1582,7 @@
           },
           "message": {
             "type": "string",
-            "example": "Note created successfully"
+            "example": "Catatan berhasil dibuat"
           },
           "data": {
             "$ref": "#/components/schemas/Note"
@@ -1726,7 +1726,7 @@
           },
           "message": {
             "type": "string",
-            "example": "Service created successfully"
+            "example": "Layanan berhasil dibuat"
           },
           "data": {
             "$ref": "#/components/schemas/Service"
@@ -1734,7 +1734,7 @@
         },
         "example": {
           "status": "success",
-          "message": "Service created successfully",
+          "message": "Layanan berhasil dibuat",
           "data": {
             "id": "1",
             "name": "Dry Cleaning",

@@ -270,18 +270,18 @@ router.post("/signup", async (req, res) => {
     const mailOptions = {
       from: 'Cuci Bayar GO <cucibayargo@outlook.com>',
       to: email,
-      subject: 'Verify Your Email Address',
-      text: `Please verify your email address by clicking the following link: ${verificationUrl}`,
-      html: `<p>Please verify your email address by clicking the following link: <a href="${verificationUrl}">Verify Email</a></p>`,
+      subject: 'Verifikasi Alamat Email Anda',
+      text: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
+      html: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
     };
-
+    
     await transporter.sendMail(mailOptions);
 
     const token = jwt.sign({ id: newUser.id }, "secret_key", {
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true });
-    res.status(201).json({ message: "Signup berhasil. Please check your email for verification link."});
+    res.status(201).json({ message: "Daftar berhasil. Silahkan cek email anda untuk verifikasi"});
   } catch (err: any) {
     res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
   }
@@ -356,7 +356,7 @@ router.post("/change-password", async (req, res) => {
 
   try {
     await changeUserPassword(email, currentPassword, newPassword);
-    res.status(200).json({ message: 'Password updated successfully.' });
+    res.status(200).json({ message: 'Password berhasil diperbarui.' });
   } catch (err: any) {
     res.status(400).json({ message: err.message });
   }
@@ -387,7 +387,7 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
  *       '302':
  *         description: Redirects to the frontend application with an authentication token
  *       '500':
- *         description: Internal server error
+ *         description: Terjadi kesalahan server
  */
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
   if (req.user) {
@@ -396,7 +396,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
-    res.redirect("https://merchant-app-fe.vercel.app/"); 
+    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing"); 
   } else {
     res.status(500).json({ message: "Authentication failed" });
   }
@@ -422,7 +422,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
  *       400:
  *         description: Invalid or expired verification link.
  *       500:
- *         description: Internal server error.
+ *         description: Terjadi kesalahan server.
  */
 router.get("/verify-email", async (req, res) => {
   const { token } = req.query;

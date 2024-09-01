@@ -93,7 +93,7 @@ router.post("/", async (req: Request, res: Response) => {
     });
     res.status(200).json({
         status: "success",
-        message: "Email support submitted successfully.",
+        message: "Email dukungan telah berhasil dikirim",
       })
 });
 

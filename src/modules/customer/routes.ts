@@ -168,7 +168,7 @@ router.post("/", (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).json({
       errors: [{
         type: 'body',
-        msg: 'Request body is missing or invalid',
+        msg: 'Isi permintaan hilang atau tidak valid',
       }],
     });
   }

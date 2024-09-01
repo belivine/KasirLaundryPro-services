@@ -112,14 +112,14 @@ const upload = multer({
  *                   type: string
  *                   description: The path of the uploaded file in Supabase Storage
  *       '400':
- *         description: No file uploaded
+ *         description: Tidak ada file yang diunggah
  *       '500':
- *         description: Failed to upload file
+ *         description: Gagal mengunggah file
  */
 router.post("/upload-logo", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded." });
+      return res.status(400).json({ message: "Tidak ada file yang diunggah" });
     }
 
     const file = req.file;
@@ -136,7 +136,7 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Failed to upload file.", error: error.message });
+        .json({ message: "Gagal mengunggah file", error: error.message });
     }
 
     // Respond with file details
@@ -144,7 +144,7 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: "Internal server error.", error: error.message });
+      .json({ message: "Terjadi kesalahan server.", error: error.message });
   }
 });
 
@@ -163,7 +163,7 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       '404':
- *         description: User not found
+ *         description: User tidak ditemukan
  */
 router.get("/details", async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.userId;
@@ -173,7 +173,7 @@ router.get("/details", async (req: AuthenticatedRequest, res: Response) => {
     if (user) {
       res.json(user);
     } else {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "User tidak ditemukan" });
     }
   } catch (error) {
     const err = error as Error;
@@ -219,11 +219,11 @@ router.get("/details", async (req: AuthenticatedRequest, res: Response) => {
  *                 description: Path of the uploaded logo in Supabase Storage
  *     responses:
  *       '200':
- *         description: User details updated successfully
+ *         description: Rincian pengguna berhasil diperbarui
  *       '400':
  *         description: Missing required fields or invalid input
  *       '404':
- *         description: User not found
+ *         description: Pengguna tidak ditemukan
  *       '500':
  *         description: Failed to update user details or process logo
  */
@@ -233,7 +233,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
   // Validate required fields
   if (!name || !email) {
-    return res.status(400).json({ message: 'Name and email are required' });
+    return res.status(400).json({ message: 'Nama dan email diperlukan' });
   }
 
   try {
@@ -241,7 +241,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const updatedUser = await updateUserDetails(id, { name, email, phone_number, address });
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Pengguna tidak ditemukan' });
     }
 
     if (logo) {
@@ -255,7 +255,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         .move(logo, newLogoPath);
 
       if (moveError) {
-        return res.status(500).json({ message: 'Failed to move logo file.', error: moveError.message });
+        return res.status(500).json({ message: 'Gagal memindahkan file logo', error: moveError.message });
       }
 
       // Clean up the original temporary logo file if it was successfully moved
@@ -264,7 +264,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         .remove([logo]);
 
       if (deleteError) {
-        return res.status(500).json({ message: 'Failed to delete temporary logo file.', error: deleteError.message });
+        return res.status(500).json({ message: 'Gagal menghapus file logo sementara', error: deleteError.message });
       }
 
       // Get the public URL for the new logo
@@ -276,7 +276,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       const publicURL = data?.publicUrl;
 
       if (!publicURL) {
-        return res.status(500).json({ message: 'Failed to retrieve the public URL for the logo.' });
+        return res.status(500).json({ message: 'Gagal mengambil URL publik untuk logo' });
       }
 
       // Update user profile with the new logo URL
@@ -284,10 +284,10 @@ router.put('/:id', async (req: Request, res: Response) => {
       updatedUser.logo = publicURL; // Update the user object with the new logo URL
     }
 
-    res.status(200).json({ message: 'User details updated successfully', user: updatedUser });
+    res.status(200).json({ message: 'Rincian pengguna berhasil diperbarui', user: updatedUser });
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ message: 'Internal server error.', error: err.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server.', error: err.message });
   }
 });
 

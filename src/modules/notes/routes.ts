@@ -44,7 +44,7 @@ const router = express.Router();
  *           example: "success"
  *         message:
  *           type: string
- *           example: "Note created successfully"
+ *           example: "Catatan berhasil dibuat"
  *         data:
  *           $ref: '#/components/schemas/Note'
  */
@@ -108,7 +108,7 @@ router.put("/", async (req: AuthenticatedRequest, res) => {
       errors: [
         {
           type: "body",
-          msg: "Request body is missing or invalid",
+          msg: "Isi permintaan hilang atau tidak valid",
         },
       ],
     });
@@ -138,7 +138,7 @@ router.put("/", async (req: AuthenticatedRequest, res) => {
       const updatedNote = await updateNote(latestNote.id, { notes });
       res.status(200).json({
         status: "success",
-        message: "Note updated successfully",
+        message: "Catatan berhasil diubah",
         data: updatedNote,
       });
     } else {
@@ -146,7 +146,7 @@ router.put("/", async (req: AuthenticatedRequest, res) => {
       const newNote = await addNote({ notes }, req.userId);
       res.status(201).json({
         status: "success",
-        message: "Note created successfully",
+        message: "Catatan berhasil dibuat",
         data: newNote,
       });
     }

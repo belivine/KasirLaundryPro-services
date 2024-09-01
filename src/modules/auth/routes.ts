@@ -139,7 +139,7 @@ router.post("/login", async (req, res) => {
 
     res.cookie("auth_token", token, {
       httpOnly: true,
-      secure: true, 
+      secure: false, 
       sameSite: 'none', 
     });
 
@@ -185,7 +185,7 @@ router.post("/logout", async (req, res) => {
     // Clear the authentication cookie
     res.cookie("auth_token", "", {
       httpOnly: true,
-      secure: true, 
+      secure: false, 
       sameSite: 'none', 
       expires: new Date(0), 
     });
@@ -295,10 +295,6 @@ router.post("/signup", async (req, res) => {
     
     await transporter.sendMail(mailOptions);
 
-    const token = jwt.sign({ id: newUser.id }, "secret_key", {
-      expiresIn: "1h",
-    });
-    res.cookie("auth_token", token, { httpOnly: true });
     res.status(201).json({ message: "Daftar berhasil. Silahkan cek email anda untuk verifikasi"});
   } catch (err: any) {
     res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });

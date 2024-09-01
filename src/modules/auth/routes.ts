@@ -110,7 +110,7 @@ const transporter = nodemailer.createTransport({
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Email tidak ditemukan."
+ *                   example: "Email tidak ditemukan"
  */
 router.post("/login", async (req, res) => {
   const { error } = LoginSchema.validate(req.body);
@@ -123,9 +123,13 @@ router.post("/login", async (req, res) => {
   try {
     const user = await getUserByEmail(email);
     if (!user) {
-      return res.status(400).json({ message: "Email tidak ditemukan." });
+      return res.status(400).json({ message: "Email tidak ditemukan" });
     }
 
+    if (user.status === "pending") {
+      return res.status(400).json({ message: "Tolong lakukan verifikasi email terlebih dahulu" });
+    }
+    
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(400).json({ message: "Password salah." });

@@ -138,7 +138,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
 
     res.cookie("auth_token", token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: false, 
       sameSite: 'none', 
     });
@@ -409,7 +409,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     const token = jwt.sign({ id: user.id }, "secret_key", {
       expiresIn: "1h",
     });
-    res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
+    res.cookie("auth_token", token, { httpOnly: false, sameSite: 'none', secure: false});
     res.redirect("https://merchant-app-fe.vercel.app/order/ongoing"); 
   } else {
     res.status(500).json({ message: "Authentication failed" });

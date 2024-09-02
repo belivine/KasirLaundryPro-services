@@ -24,8 +24,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
     next();
   } catch (error) {
     console.log(error);
-    
-    res.status(400).json({ message: 'Token tidak ditemukan' });
+    res.status(401).json({ message: 'Token tidak ditemukan' });
   }
 };
 

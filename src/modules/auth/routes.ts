@@ -65,7 +65,13 @@ const transporter = nodemailer.createTransport({
  *           type: string
  *           format: date-time
  *           description: Timestamp of when the user was last updated
+ *   securitySchemes:
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: auth_token
  */
+
 
 /**
  * @swagger
@@ -111,6 +117,8 @@ const transporter = nodemailer.createTransport({
  *                 message:
  *                   type: string
  *                   example: "Email tidak ditemukan"
+ *     security:
+ *       - cookieAuth: []
  */
 router.post("/login", async (req, res) => {
   const { error } = LoginSchema.validate(req.body);

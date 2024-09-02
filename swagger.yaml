@@ -75,7 +75,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       }
     },
     "/auth/logout": {
@@ -1957,6 +1962,13 @@
             "example": "123 Main St, Springfield"
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "auth_token"
       }
     }
   },

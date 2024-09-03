@@ -117,8 +117,6 @@ const transporter = nodemailer.createTransport({
  *                 message:
  *                   type: string
  *                   example: "Email tidak ditemukan"
- *     security:
- *       - cookieAuth: []
  */
 router.post("/login", async (req, res) => {
   const { error } = LoginSchema.validate(req.body);
@@ -151,7 +149,7 @@ router.post("/login", async (req, res) => {
       sameSite: 'none', 
     });
 
-    res.status(200).json({ message: "Login berhasil."});
+    res.status(200).json({ message: "Login berhasil.", token: token});
   } catch (err: any) {
     res
       .status(500)
@@ -418,7 +416,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
       expiresIn: "1h",
     });
     res.cookie("auth_token", token, { httpOnly: false, sameSite: 'none', secure: false});
-    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing"); 
+    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing?token="+token); 
   } else {
     res.status(500).json({ message: "Authentication failed" });
   }

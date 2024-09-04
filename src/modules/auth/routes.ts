@@ -65,11 +65,6 @@ const transporter = nodemailer.createTransport({
  *           type: string
  *           format: date-time
  *           description: Timestamp of when the user was last updated
- *   securitySchemes:
- *     cookieAuth:
- *       type: apiKey
- *       in: cookie
- *       name: auth_token
  */
 
 
@@ -144,8 +139,8 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
 
     res.cookie("auth_token", token, {
-      httpOnly: false,
-      secure: false, 
+      httpOnly: true,
+      secure: true, 
       sameSite: 'none', 
     });
 
@@ -191,7 +186,7 @@ router.post("/logout", async (req, res) => {
     // Clear the authentication cookie
     res.cookie("auth_token", "", {
       httpOnly: true,
-      secure: false, 
+      secure: true, 
       sameSite: 'none', 
       expires: new Date(0), 
     });
@@ -415,7 +410,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     const token = jwt.sign({ id: user.id }, "secret_key", {
       expiresIn: "1h",
     });
-    res.cookie("auth_token", token, { httpOnly: false, sameSite: 'none', secure: false});
+    res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
     res.redirect("https://merchant-app-fe.vercel.app/order/ongoing?token="+token); 
   } else {
     res.status(500).json({ message: "Authentication failed" });

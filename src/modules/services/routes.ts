@@ -158,12 +158,17 @@ const router = express.Router();
  *     summary: Get all services
  *     description: Retrieve a list of all services
  *     tags: [Services]
-*     parameters:
+ *     parameters:
  *       - in: query
  *         name: filter
  *         schema:
- *            type: string
- *         description: Filter Data by name
+ *           type: string
+ *         description: Filter data by name
+ *       - in: query
+ *         name: duration
+ *         schema:
+ *           type: string
+ *         description: Filter data by duration
  *     responses:
  *       200:
  *         description: Successful retrieval
@@ -177,10 +182,12 @@ const router = express.Router();
 router.get('/', async (req: AuthenticatedRequest, res) => {
   // Extract query parameters from the request
   const filter = req.query.filter as string | null;
+  const durationId = req.query.duration as string | null;
   try {
-    const services = await getServices(filter, req.userId);
+    const services = await getServices(filter, req.userId, durationId);
     res.json(services);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'Gagal mengambil layanan' });
   }
 });

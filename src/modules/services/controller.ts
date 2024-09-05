@@ -5,18 +5,21 @@ import { Service, Duration } from "./types";
 * Retrieve all services with their IDs and names from the database.
 * @returns {Promise<{ id: number, name: string }[]>} - A promise that resolves to an array of services with their IDs and names.
 */
-export async function getServices(filter: string | null, merchant_id?: string): Promise<{ id: number, name: string }[]> {
+export async function getServices(filter: string | null, merchantId?: string, durationId?: string | null): Promise<{ id: number, name: string }[]> {
  const client = await pool.connect();
  try {
-   const query = `
-     SELECT id, name
-     FROM service
-     WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%') AND merchant_id = $2
-     ORDER BY created_at DESC
-   `;
+  const query = `
+      SELECT service.id, service.name, service_duration.price
+      FROM service
+      LEFT JOIN service_duration ON service.id = service_duration.service
+      WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%') 
+        AND service.merchant_id = $2
+        AND ($3::text IS NULL OR service_duration.duration::text = $3)
+      ORDER BY service.created_at DESC
+    `;
 
-   const result = await client.query(query, [filter,merchant_id]);
-   return result.rows;
+    const result = await client.query(query, [filter, merchantId, durationId]);
+    return result.rows;
  } finally {
    client.release();
  }

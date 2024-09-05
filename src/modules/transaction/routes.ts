@@ -1,6 +1,16 @@
-import express, { Request, Response } from 'express';
-import { Transaction, transactionSchema } from './types';
-import { addTransaction, getTransactions } from './controller';
+import express, { Request, Response } from "express";
+import {
+  Transaction,
+  transactionSchema,
+  transactionUpdateSchema,
+} from "./types";
+import {
+  addTransaction,
+  getTransactionById,
+  getTransactions,
+  updateTransaction,
+} from "./controller";
+import { AuthenticatedRequest } from "src/middlewares";
 
 const router = express.Router();
 
@@ -173,7 +183,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Transaction'
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get("/", async (req: AuthenticatedRequest, res: Response) => {
   try {
     // Extract query parameters from the request
     const status = req.query.status as string | null;
@@ -181,7 +191,12 @@ router.get('/', async (req: Request, res: Response) => {
     const date = req.query.date as string | null;
 
     // Call the getTransactions function with extracted parameters
-    const transactions = await getTransactions(status || null, customer || null, date || null);
+    const transactions = await getTransactions(
+      status || null,
+      customer || null,
+      date || null,
+      req.userId
+    );
 
     // Send the response with the transactions data
     res.json(transactions);
@@ -216,22 +231,26 @@ router.get('/', async (req: Request, res: Response) => {
  *       400:
  *         description: Bad request, invalid input
  */
-router.post('/', async (req, res) => {
+router.post("/", async (req: AuthenticatedRequest, res) => {
   const { error } = transactionSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ status: 'error', message: error.details[0].message });
+    return res
+      .status(400)
+      .json({ status: "error", message: error.details[0].message });
   }
 
   try {
-    const newService = await addTransaction(req.body);
+    const newService = await addTransaction(req.body, req.userId);
     res.status(201).json({
-      status: 'success',
-      message: 'Transaction created successfully',
-      data: newService
+      status: "success",
+      message: "Transaksi berhasil dibuat",
+      data: newService,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: 'error', message: 'Failed to create transaction' });
+    res
+      .status(500)
+      .json({ status: "error", message: "Transaksi gagal dibuat" });
   }
 });
 
@@ -239,8 +258,8 @@ router.post('/', async (req, res) => {
  * @swagger
  * /transaction/{id}:
  *   put:
- *     summary: Update a transaction item
- *     description: Update an existing transaction record by ID
+ *     summary: Update the status of a transaction
+ *     description: Update only the status field of an existing transaction record by ID, allowing only "Siap Diambil" or "Selesai" as valid statuses.
  *     tags:
  *       - Transaction
  *     parameters:
@@ -255,10 +274,15 @@ router.post('/', async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Transaction'
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: Siap Diambil
+ *                 description: The new status for the transaction. Allowed values are "Siap Diambil" and "Selesai".
  *     responses:
  *       200:
- *         description: Transaction item updated successfully
+ *         description: Transaction status updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -268,12 +292,45 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: Transaction item not found
  */
-router.put('/:id', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Transaction updated successfully',
-  }); // Replace with your logic to update the transaction item
+router.put('/:id', async (req, res) => {
+  // Check if the body contains only the status field
+  if (!req.body || typeof req.body.status !== 'string') {
+    return res.status(400).json({
+      errors: [{
+        type: 'body',
+        msg: 'Isi permintaan harus berisi field "status" yang valid.',
+      }],
+    });
+  }
+
+  const { status } = req.body;
+
+  // Allow only 'Siap Diambil' or 'Selesai' as the valid status
+  const validStatuses = ['Siap Diambil', 'Selesai'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({
+      error: 'Status tidak valid. Hanya "Siap Diambil" dan "Selesai" yang diperbolehkan.',
+    });
+  }
+
+  const transactionId = req.params.id;
+
+  try {
+    const updatedTransaction = await updateTransaction(status, transactionId);
+    res.json({ status: 'sukses', pesan: 'Status transaksi berhasil diperbarui', data: updatedTransaction });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        res.status(404).json({ error: 'Transaksi tidak ditemukan' });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    } else {
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  }
 });
+
 
 /**
  * @swagger
@@ -300,12 +357,22 @@ router.put('/:id', (req, res) => {
  *       404:
  *         description: Transaction item not found
  */
-router.get('/:id', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Transaction retrieved successfully',
-    data: []
-  }); // Replace with your logic to fetch the transaction item details
+router.get("/:id", async (req, res) => {
+  const transactionId = req.params.id;
+
+  try {
+    const duration = await getTransactionById(transactionId);
+    if (!duration) {
+      return res.status(404).json({ error: "Transaksi tidak ditemukan" });
+    }
+    res.json(duration);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Terjadi kesalahan server" });
+    }
+  }
 });
 
 export default router;

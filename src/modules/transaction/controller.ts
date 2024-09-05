@@ -11,7 +11,8 @@ import pool from "../../database/postgres";
 export async function getTransactions(
   status: string | null = null,
   customer: string | null = null,
-  date: string | null = null
+  date: string | null = null,
+  merchant_id?: string
 ): Promise<Transaction[]> {
   const client = await pool.connect();
   try {
@@ -27,12 +28,13 @@ export async function getTransactions(
         LEFT JOIN customer c ON t.customer = c.id
         LEFT JOIN duration d ON t.duration = d.id
         WHERE 
-            ($1::text IS NULL OR t.status = $1)
+            (($1::text IS NULL OR t.status = $1)
             AND ($2::uuid IS NULL OR t.customer = $2::uuid)
-            AND ($3::date IS NULL OR t.created_at::date = $3)
+            AND ($3::date IS NULL OR t.created_at::date = $3))
+            AND t.merchant_id = $4
       `;
 
-    const result = await client.query(query, [status, customer, date ? new Date(date) : null]);
+    const result = await client.query(query, [status, customer, date ? new Date(date) : null, merchant_id]);
 
     return result.rows.map(row => ({
       id: row.transaction_id,
@@ -53,15 +55,15 @@ export async function getTransactions(
  * @param transaction - The transaction data to add.
  * @returns {Promise<Service>} - A promise that resolves to the newly created transaction.
  */
-export async function addTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction | null> {
+export async function addTransaction(transaction: Omit<Transaction, 'id'>, merchant_id?: string): Promise<Transaction | null> {
   const client = await pool.connect();
   try {
     const { customer, duration, status, items } = transaction;
     const query = `
-        INSERT INTO transaction (customer, duration, status)
-        VALUES ($1, $2, $3) RETURNING id;
+        INSERT INTO transaction (customer, duration, status, merchant_id)
+        VALUES ($1, $2, $3, $4) RETURNING id;
       `;
-    const values = [customer, duration, status];
+    const values = [customer, duration, status, merchant_id];
     const result = await client.query(query, values);
     const newTransactionId = result.rows[0].id;
 
@@ -84,6 +86,38 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>): Prom
     return transactionDetail
   } finally {
     client.release();
+  }
+}
+
+/**
+ * Updates the status and the completed_at timestamp of a transaction by its ID.
+ * If the status is "Selesai", the completed_at timestamp will be set to the current time.
+ * 
+ * @param status - The new status of the transaction.
+ * @param transactionId - The ID of the transaction to update.
+ * @returns A Promise resolving to the updated Transaction object.
+ */
+export async function updateTransaction(status: string, transactionId: string): Promise<Transaction> {
+  const client = await pool.connect();
+  try {
+    // Explicitly cast $1 to text to avoid type inconsistency issues
+    const query = `
+      UPDATE transaction
+      SET status = $1::text, 
+          completed_at = CASE 
+                          WHEN $1 = 'Selesai' THEN NOW() 
+                          ELSE completed_at 
+                        END
+      WHERE id = $2
+      RETURNING *;
+    `;
+    const values = [status, transactionId];
+    
+    const result = await client.query(query, values);
+  
+    return result.rows[0];
+  } finally {
+    client.release(); 
   }
 }
 

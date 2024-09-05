@@ -75,11 +75,7 @@
               }
             }
           }
-          }
-          }
-        ]
         }
-        ]
       }
     },
     "/auth/logout": {
@@ -816,7 +812,15 @@
             "schema": {
               "type": "string"
             },
-            "description": "Filter Data by name"
+            "description": "Filter data by name"
+          },
+          {
+            "in": "query",
+            "name": "duration",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter data by duration"
           }
         ],
         "responses": {
@@ -1059,8 +1063,8 @@
     },
     "/transaction/{id}": {
       "put": {
-        "summary": "Update a transaction item",
-        "description": "Update an existing transaction record by ID",
+        "summary": "Update the status of a transaction",
+        "description": "Update only the status field of an existing transaction record by ID, allowing only \"Siap Diambil\" or \"Selesai\" as valid statuses.",
         "tags": [
           "Transaction"
         ],
@@ -1080,14 +1084,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Transaction"
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "Siap Diambil",
+                    "description": "The new status for the transaction. Allowed values are \"Siap Diambil\" and \"Selesai\"."
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Transaction item updated successfully",
+            "description": "Transaction status updated successfully",
             "content": {
               "application/json": {
                 "schema": {

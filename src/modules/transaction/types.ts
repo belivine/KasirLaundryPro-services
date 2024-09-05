@@ -44,3 +44,8 @@ export const transactionSchema = Joi.object({
     )
     .required()
 });
+
+export const transactionUpdateSchema = Joi.object({
+  status: Joi.string()
+    .required()
+});

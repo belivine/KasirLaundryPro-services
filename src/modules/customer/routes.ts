@@ -187,7 +187,6 @@ router.post("/", (req: AuthenticatedRequest, res: Response) => {
   }
 
   const { name, phone_number, email, address, gender } = req.body;
-  console.log(req.userId);
   
   addCustomer({ name, phone_number, email, address, gender }, req.userId ?? "")
     .then((newCustomer) =>

@@ -150,7 +150,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
             t.duration AS duration_id,
             d.name AS duration_name,
             t.status AS transaction_status,
-            SUM(sd.price) total,
+            SUM(sd.price * ti.qty) AS total,
             json_agg(
                 json_build_object(
                     'service', s.id,
@@ -165,7 +165,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
         LEFT JOIN service s ON ti.service = s.id
         LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
         WHERE t.id = $1
-        GROUP BY t.id, c.name, d.name
+        GROUP BY t.id, t.customer, c.name, d.name, t.duration, t.status
       `;
 
     const result = await client.query(query, [transactionId]);
@@ -180,6 +180,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
       customer_name: row.customer_name,
       duration: row.duration_id,
       duration_name: row.duration_name,
+      total: row.total,
       status: row.transaction_status,
       items: row.items
     };

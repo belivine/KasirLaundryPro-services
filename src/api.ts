@@ -9,6 +9,7 @@ import TransactionRoutes from "./modules/transaction/routes";
 import customerRoutes from "./modules/customer/routes";
 import serviceRoutes from "./modules/services/routes";
 import durationRoutes from "./modules/duration/routes";
+import paymentRoutes from "./modules/payments/routes";
 import emailSupport from "./modules/email-support/routes";
 import notesRoutes from "./modules/notes/routes";
 import users from "./modules/user/routes";
@@ -96,6 +97,7 @@ routerV1.use("/note", notesRoutes);
 routerV1.use("/service", serviceRoutes);
 routerV1.use("/duration", durationRoutes);
 routerV1.use("/email-support", emailSupport);
+routerV1.use("/payment", paymentRoutes);
 app.use("/api/", routerV1);
 
 app.listen(port, () => {

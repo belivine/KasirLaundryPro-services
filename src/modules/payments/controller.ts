@@ -32,28 +32,31 @@ export async function addPayment(
     }
 }
 
-// /**
-//  * Update an existing payment in the database.
-//  * @param id - The ID of the payment to update.
-//  * @param payment - The updated payment data.
-//  * @returns {Promise<Payment>} - A promise that resolves to the updated payment.
-//  */
-// export async function updateNote(cash: string, noteParams: Omit<Payment, 'id'>): Promise<Payment> {
-//     const client = await pool.connect();
-//     try {
-//       const { notes } = noteParams;
-//       const query = `
-//         UPDATE note
-//         SET notes = $1
-//         WHERE id = $2 RETURNING *;
-//       `;
-//       const values = [notes, id];
-//       const result = await client.query(query, values);
-//       return result.rows[0];
-//     } finally {
-//       client.release();
-//     }
-//   }
+/**
+ * Update an existing payment in the database.
+ * @param id - The ID of the payment to update
+ * @param paymentParams - The updated payment data (status and change given).
+ * @returns {Promise<Payment>} - A promise that resolves to the updated payment.
+ */
+export async function updatePayment(id: string, paymentParams: { status: string, change_given: number, payment_received: number }): Promise<Payment> {
+    const client = await pool.connect();
+    try {
+      const { status, change_given, payment_received} = paymentParams;
+      const query = `
+        UPDATE payment
+        SET status = $1,
+            payment_received = $2,
+            change_given = $3
+        WHERE id = $4
+        RETURNING *;
+      `;
+      const values = [status, payment_received, change_given, id];
+      const result = await client.query(query, values);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+}
 
 /**
  * Retrieve a specific payment by its ID.

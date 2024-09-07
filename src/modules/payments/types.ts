@@ -11,6 +11,6 @@ export interface Payment {
   status: "Belum Dibayar" | "Lunas" | "Sebagian" | "Ditolak";
   total_amount_due: string;
   invoice_id: string;
-  payments_received: string;
+  payment_received: string;
   change_given: string;
 }

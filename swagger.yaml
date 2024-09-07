@@ -798,6 +798,53 @@
         }
       }
     },
+    "/payment/{id}": {
+      "put": {
+        "summary": "Update a payment",
+        "description": "Update an existing payment record, including the status, payment received, and change given.",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Payment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pembayaran berhasil diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Permintaan tidak valid, input salah"
+          },
+          "404": {
+            "description": "Pembayaran tidak ditemukan"
+          }
+        }
+      }
+    },
     "/service": {
       "get": {
         "summary": "Get all services",
@@ -1604,6 +1651,33 @@
           }
         }
       },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the payment"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the payment",
+            "enum": [
+              "Belum Dibayar",
+              "Lunas",
+              "Sebagian",
+              "Ditolak"
+            ]
+          },
+          "payment_received": {
+            "type": "number",
+            "description": "The total amount of payment received"
+          },
+          "change_given": {
+            "type": "number",
+            "description": "The amount of change returned to the customer"
+          }
+        }
+      },
       "ServiceAll": {
         "type": "object",
         "properties": {
@@ -1995,6 +2069,10 @@
     {
       "name": "Note",
       "description": "Notes management APIs"
+    },
+    {
+      "name": "Payment",
+      "description": "Payment management APIs"
     },
     {
       "name": "Services",

@@ -13,6 +13,7 @@ export interface Transaction {
   duration_name: string;
   status: 'Diproses' | 'Selesai' | 'Siap Diambil';
   items?: TransactionItemDetail[];
+  total?: number;
 }
 
 

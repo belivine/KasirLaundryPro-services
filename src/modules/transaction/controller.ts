@@ -1,5 +1,6 @@
 import { Transaction } from "./types";
 import pool from "../../database/postgres";
+import { addPayment } from "../payments/controller";
 
 /**
  * Retrieve a list of transactions with optional filters for status, customer, and date.
@@ -55,7 +56,7 @@ export async function getTransactions(
  * @param transaction - The transaction data to add.
  * @returns {Promise<Service>} - A promise that resolves to the newly created transaction.
  */
-export async function addTransaction(transaction: Omit<Transaction, 'id'>, merchant_id?: string): Promise<Transaction | null> {
+export async function addTransaction(transaction: Omit<Transaction, 'id'>, merchant_id?: string): Promise<any | null> {
   const client = await pool.connect();
   try {
     const { customer, duration, status, items } = transaction;
@@ -83,7 +84,19 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
     }
 
     const transactionDetail = await getTransactionById(newTransactionId);
-    return transactionDetail
+
+    //Create Payment
+    const paymentDetail = await addPayment({
+      status: "Belum Dibayar",
+      invoice_id: generateInvoiceId(newTransactionId),
+      total_amount_due: transactionDetail?.total || 0,
+      transaction_id: newTransactionId
+    }, merchant_id);
+
+    return {
+      transaction: transactionDetail,
+      payment: paymentDetail
+    }
   } finally {
     client.release();
   }
@@ -137,6 +150,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
             t.duration AS duration_id,
             d.name AS duration_name,
             t.status AS transaction_status,
+            SUM(sd.price) total,
             json_agg(
                 json_build_object(
                     'service', s.id,
@@ -149,6 +163,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
         LEFT JOIN duration d ON t.duration = d.id
         LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
         LEFT JOIN service s ON ti.service = s.id
+        LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
         WHERE t.id = $1
         GROUP BY t.id, c.name, d.name
       `;
@@ -171,4 +186,10 @@ export async function getTransactionById(transactionId: string): Promise<Transac
   } finally {
     client.release();
   }
+}
+
+function generateInvoiceId(id: number) {
+  const prefix = 'INV';
+  const timestamp = Date.now(); // Current timestamp
+  return `${prefix}-${timestamp}-${id}`;
 }

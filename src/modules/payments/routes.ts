@@ -24,7 +24,7 @@ const router = express.Router();
  *         status:
  *           type: string
  *           description: Status of the payment
- *           enum: [Belum Dibayar, Lunas, Ditolak]
+ *           enum: [Belum Dibayar, Lunas]
  *         payment_received:
  *           type: number
  *           description: The total amount of payment received

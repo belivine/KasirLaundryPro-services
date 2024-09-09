@@ -1,28 +1,35 @@
 import pool from "../../database/postgres";
-import { Service, Duration } from "./types";
+import { Service } from "./types";
 
 /**
 * Retrieve all services with their IDs and names from the database.
 * @returns {Promise<{ id: number, name: string }[]>} - A promise that resolves to an array of services with their IDs and names.
 */
-export async function getServices(filter: string | null, merchantId?: string, durationId?: string | null): Promise<{ id: number, name: string }[]> {
- const client = await pool.connect();
- try {
-  const query = `
-      SELECT service.id, service.name, service_duration.price
+export async function getServices(filter: string | null, merchantId?: string, durationId?: string | null): Promise<{ id: number, name: string, price?: number }[]> {
+  const client = await pool.connect();
+  try {
+    // Adjust the SELECT clause depending on the presence of durationId
+    const selectClause = durationId ? "service.id, service.name, service_duration.price" : "service.id, service.name";
+    // Adjust the JOIN clause to conditionally include the service_duration
+    const joinClause = durationId ? "LEFT JOIN service_duration ON service.id = service_duration.service" : "";
+
+    const query = `
+      SELECT ${selectClause}
       FROM service
-      LEFT JOIN service_duration ON service.id = service_duration.service
+      ${joinClause}
       WHERE ($1::text IS NULL OR service.name ILIKE '%' || $1 || '%') 
         AND service.merchant_id = $2
-        AND ($3::text IS NULL OR service_duration.duration::text = $3)
+        ${durationId ? "AND service_duration.duration::text = $3" : ""}
       ORDER BY service.created_at DESC
     `;
 
-    const result = await client.query(query, [filter, merchantId, durationId]);
+    const params = durationId ? [filter, merchantId, durationId] : [filter, merchantId];
+    const result = await client.query(query, params);
+
     return result.rows;
- } finally {
-   client.release();
- }
+  } finally {
+    client.release();
+  }
 }
 
 

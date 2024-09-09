@@ -136,7 +136,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Password salah." });
     }
 
-    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "1h" });
+    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "2d" });
 
     res.cookie("auth_token", token, {
       httpOnly: true,
@@ -144,7 +144,7 @@ router.post("/login", async (req, res) => {
       sameSite: 'none', 
     });
 
-    res.status(200).json({ message: "Login berhasil.", token: token});
+    res.status(200).json({ message: "Login berhasil."});
   } catch (err: any) {
     res
       .status(500)
@@ -408,10 +408,10 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   if (req.user) {
     const user = req.user as any;
     const token = jwt.sign({ id: user.id }, "secret_key", {
-      expiresIn: "1h",
+      expiresIn: "2d",
     });
     res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
-    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing?token="+token); 
+    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing"); 
   } else {
     res.status(500).json({ message: "Authentication failed" });
   }

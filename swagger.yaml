@@ -1663,9 +1663,7 @@
             "description": "Status of the payment",
             "enum": [
               "Belum Dibayar",
-              "Lunas",
-              "Sebagian",
-              "Ditolak"
+              "Lunas"
             ]
           },
           "payment_received": {

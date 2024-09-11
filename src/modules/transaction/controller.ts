@@ -19,15 +19,13 @@ export async function getTransactions(
   try {
     const query = `
         SELECT 
-            t.id AS transaction_id,
-            t.customer AS customer_id,
-            c.name AS customer_name,
-            t.duration AS duration_id,
-            d.name AS duration_name,
-            t.status AS transaction_status
+            t.id AS id,
+            c.name AS customer,
+            t.status AS status,
+            d.invoice_id invoice
         FROM transaction t
         LEFT JOIN customer c ON t.customer = c.id
-        LEFT JOIN duration d ON t.duration = d.id
+        LEFT JOIN payment d ON t.id = d.transaction_id
         WHERE 
             (($1::text IS NULL OR t.status = $1)
             AND ($2::uuid IS NULL OR t.customer = $2::uuid)
@@ -37,14 +35,7 @@ export async function getTransactions(
 
     const result = await client.query(query, [status, customer, date ? new Date(date) : null, merchant_id]);
 
-    return result.rows.map(row => ({
-      id: row.transaction_id,
-      customer: row.customer_id,
-      customer_name: row.customer_name,
-      duration: row.duration_id,
-      duration_name: row.duration_name,
-      status: row.transaction_status,
-    }));
+    return result.rows;
   } finally {
     client.release();
   }
@@ -88,7 +79,7 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
     //Create Payment
     const paymentDetail = await addPayment({
       status: "Belum Dibayar",
-      invoice_id: generateInvoiceId(newTransactionId),
+      invoice_id: generateInvoiceId(),
       total_amount_due: transactionDetail?.total || 0,
       transaction_id: newTransactionId
     }, merchant_id);
@@ -120,7 +111,11 @@ export async function updateTransaction(status: string, transactionId: string): 
           completed_at = CASE 
                           WHEN $1 = 'Selesai' THEN NOW() 
                           ELSE completed_at 
-                        END
+                        END,
+          ready_to_pick_up_at = CASE 
+                      WHEN $1 = 'Siap Diambil' THEN NOW() 
+                        ELSE ready_to_pick_up_at 
+                      END
       WHERE id = $2
       RETURNING *;
     `;
@@ -189,8 +184,8 @@ export async function getTransactionById(transactionId: string): Promise<Transac
   }
 }
 
-function generateInvoiceId(id: number) {
+function generateInvoiceId() {
   const prefix = 'INV';
   const timestamp = Date.now(); // Current timestamp
-  return `${prefix}-${timestamp}-${id}`;
+  return `${prefix}-${timestamp}`;
 }

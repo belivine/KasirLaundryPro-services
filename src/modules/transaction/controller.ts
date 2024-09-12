@@ -12,35 +12,65 @@ import { addPayment } from "../payments/controller";
 export async function getTransactions(
   status: string | null = null,
   customer: string | null = null,
-  date: string | null = null,
+  date_from: string | null = null,
+  date_to: string | null = null,
   merchant_id?: string
 ): Promise<Transaction[]> {
   const client = await pool.connect();
-  try {
-    const query = `
-        SELECT 
-            t.id AS id,
-            c.name AS customer,
-            t.status AS status,
-            d.invoice_id invoice
-        FROM transaction t
-        LEFT JOIN customer c ON t.customer = c.id
-        LEFT JOIN payment d ON t.id = d.transaction_id
-        WHERE 
-            (($1::text IS NULL OR t.status = $1)
-            AND ($2::uuid IS NULL OR t.customer = $2::uuid)
-            AND ($3::date IS NULL OR t.created_at::date = $3))
-            AND t.merchant_id = $4
-      `;
 
-    const result = await client.query(query, [status, customer, date ? new Date(date) : null, merchant_id]);
+  try {
+    // Determine the date column based on the status
+    let dateColumn: string;
+
+    switch (status) {
+      case "Diproses":
+        dateColumn = "t.created_at";
+        break;
+      case "Ready to Pick Up":
+        dateColumn = "t.ready_to_pick_up_at";
+        break;
+      case "Selesai":
+        dateColumn = "t.completed_at";
+        break;
+      default:
+        // Default to created_at if no specific status is provided
+        dateColumn = "t.created_at";
+        break;
+    }
+
+    // Building dynamic conditions for each filter
+    let conditions = [
+      status ? `t.status = $1` : `($1::text IS NULL OR t.status = $1)`,
+      customer ? `t.customer = $2::uuid` : `($2::uuid IS NULL OR t.customer = $2::uuid)`,
+      (date_from && date_to) 
+        ? `${dateColumn} BETWEEN $3::date AND $4::date` 
+        : `($3::date IS NULL OR $4::date IS NULL OR ${dateColumn} BETWEEN $3::date AND $4::date)`,
+      `t.merchant_id = $5`
+    ];
+
+    const query = `
+      SELECT 
+          t.id AS id,
+          c.name AS customer,
+          d.status AS payment_status,
+          d.invoice_id AS invoice,
+          t.status,
+          t.created_at,
+          t.ready_to_pick_up_at,
+          t.completed_at
+      FROM transaction t
+      LEFT JOIN customer c ON t.customer = c.id
+      LEFT JOIN payment d ON t.id = d.transaction_id
+      WHERE ${conditions.join(' AND ')}
+    `;
+
+    const result = await client.query(query, [status, customer, date_from, date_to, merchant_id]);
 
     return result.rows;
   } finally {
     client.release();
   }
 }
-
 
 /**
  * Add a new transaction to the database.

@@ -1055,16 +1055,26 @@
           },
           {
             "in": "query",
-            "name": "date",
+            "name": "date_from",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
             },
-            "description": "Filter by date created"
+            "description": "Filter by start date"
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by end date"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful retrieval",
+            "description": "Successful retrieval of transaction items",
             "content": {
               "application/json": {
                 "schema": {

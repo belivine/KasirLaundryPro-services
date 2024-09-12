@@ -163,7 +163,10 @@ const router = express.Router();
  *         name: status
  *         schema:
  *           type: string
- *           enum: [Diproses, Selesai, Siap Diambil]
+ *           enum: 
+ *             - Diproses
+ *             - Selesai
+ *             - Siap Diambil
  *         description: Filter by transaction status
  *       - in: query
  *         name: customer
@@ -171,13 +174,20 @@ const router = express.Router();
  *           type: string
  *         description: Filter by customer UUID
  *       - in: query
- *         name: date
+ *         name: date_from
  *         schema:
  *           type: string
- *         description: Filter by date created
+ *           format: date
+ *         description: Filter by start date
+ *       - in: query
+ *         name: date_to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by end date
  *     responses:
  *       200:
- *         description: Successful retrieval
+ *         description: Successful retrieval of transaction items
  *         content:
  *           application/json:
  *             schema:
@@ -188,14 +198,16 @@ router.get("/", async (req: AuthenticatedRequest, res: Response) => {
     // Extract query parameters from the request
     const status = req.query.status as string | null;
     const customer = req.query.customer as string | null;
-    const date = req.query.date as string | null;
+    const date_from = req.query.date_from as string | null;
+    const date_to = req.query.date_to as string | null;
 
     // Call the getTransactions function with extracted parameters
     const transactions = await getTransactions(
       status || null,
       customer || null,
-      date || null,
-      req.userId
+      date_from || null,
+      date_to || null,
+      req.userId // Assuming the user's merchant_id is retrieved from req.userId
     );
 
     // Send the response with the transactions data

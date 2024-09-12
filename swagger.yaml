@@ -1047,11 +1047,11 @@
           },
           {
             "in": "query",
-            "name": "customer",
+            "name": "filter",
             "schema": {
               "type": "string"
             },
-            "description": "Filter by customer UUID"
+            "description": "Filter by customer name or invoice ID"
           },
           {
             "in": "query",

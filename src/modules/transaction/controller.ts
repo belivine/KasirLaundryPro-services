@@ -2,16 +2,9 @@ import { Transaction } from "./types";
 import pool from "../../database/postgres";
 import { addPayment } from "../payments/controller";
 
-/**
- * Retrieve a list of transactions with optional filters for status, customer, and date.
- * @param {string | null} status - Optional filter by transaction status.
- * @param {string | null} customer - Optional filter by customer UUID.
- * @param {string | null} date - Optional filter by date created (in YYYY-MM-DD format).
- * @returns {Promise<Transaction[]>} - A promise that resolves to an array of transactions.
- */
 export async function getTransactions(
   status: string | null = null,
-  customer: string | null = null,
+  filter: string | null = null,
   date_from: string | null = null,
   date_to: string | null = null,
   merchant_id?: string
@@ -33,21 +26,39 @@ export async function getTransactions(
         dateColumn = "t.completed_at";
         break;
       default:
-        // Default to created_at if no specific status is provided
         dateColumn = "t.created_at";
         break;
     }
 
     // Building dynamic conditions for each filter
-    let conditions = [
-      status ? `t.status = $1` : `($1::text IS NULL OR t.status = $1)`,
-      customer ? `t.customer = $2::uuid` : `($2::uuid IS NULL OR t.customer = $2::uuid)`,
-      (date_from && date_to) 
-        ? `${dateColumn} BETWEEN $3::date AND $4::date` 
-        : `($3::date IS NULL OR $4::date IS NULL OR ${dateColumn} BETWEEN $3::date AND $4::date)`,
-      `t.merchant_id = $5`
-    ];
+    let conditions: string[] = [];
+    let values: any[] = [];
 
+    // Add status condition
+    if (status) {
+      conditions.push(`t.status = $${values.length + 1}`);
+      values.push(status);
+    }
+
+    // Add customer ID condition
+    if (filter) {
+      conditions.push(`(c.name ILIKE '%' || $${values.length + 1} || '%' OR d.invoice_id ILIKE '%' || $${values.length + 1} || '%')`);
+      values.push(filter);
+    }
+
+    // Add date range condition
+    if (date_from && date_to) {
+      conditions.push(`${dateColumn} BETWEEN $${values.length + 1}::date AND $${values.length + 2}::date`);
+      values.push(date_from, date_to);
+    }
+
+    // Add merchant_id condition
+    if (merchant_id) {
+      conditions.push(`t.merchant_id = $${values.length + 1}`);
+      values.push(merchant_id);
+    }
+
+    // Construct query
     const query = `
       SELECT 
           t.id AS id,
@@ -64,7 +75,8 @@ export async function getTransactions(
       WHERE ${conditions.join(' AND ')}
     `;
 
-    const result = await client.query(query, [status, customer, date_from, date_to, merchant_id]);
+    // Execute the query
+    const result = await client.query(query, values);
 
     return result.rows;
   } finally {

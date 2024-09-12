@@ -169,10 +169,10 @@ const router = express.Router();
  *             - Siap Diambil
  *         description: Filter by transaction status
  *       - in: query
- *         name: customer
+ *         name: filter
  *         schema:
  *           type: string
- *         description: Filter by customer UUID
+ *         description: Filter by customer name or invoice ID
  *       - in: query
  *         name: date_from
  *         schema:
@@ -197,14 +197,14 @@ router.get("/", async (req: AuthenticatedRequest, res: Response) => {
   try {
     // Extract query parameters from the request
     const status = req.query.status as string | null;
-    const customer = req.query.customer as string | null;
+    const filter = req.query.filter as string | null;
     const date_from = req.query.date_from as string | null;
     const date_to = req.query.date_to as string | null;
 
     // Call the getTransactions function with extracted parameters
     const transactions = await getTransactions(
       status || null,
-      customer || null,
+      filter || null,
       date_from || null,
       date_to || null,
       req.userId // Assuming the user's merchant_id is retrieved from req.userId

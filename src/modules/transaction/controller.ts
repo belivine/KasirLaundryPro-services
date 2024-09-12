@@ -1,4 +1,4 @@
-import { Transaction } from "./types";
+import { Transaction, TransactionData, TransactionDetails } from "./types";
 import pool from "../../database/postgres";
 import { addPayment } from "../payments/controller";
 
@@ -8,7 +8,7 @@ export async function getTransactions(
   date_from: string | null = null,
   date_to: string | null = null,
   merchant_id?: string
-): Promise<Transaction[]> {
+): Promise<TransactionData[]> {
   const client = await pool.connect();
 
   try {
@@ -136,32 +136,37 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
 }
 
 /**
- * Updates the status and the completed_at timestamp of a transaction by its ID.
+ * Updates the status and the completed_at timestamp of a transaction by its invoice ID.
  * If the status is "Selesai", the completed_at timestamp will be set to the current time.
  * 
  * @param status - The new status of the transaction.
- * @param transactionId - The ID of the transaction to update.
+ * @param invoiceId - The invoice ID of the transaction to update.
  * @returns A Promise resolving to the updated Transaction object.
  */
-export async function updateTransaction(status: string, transactionId: string): Promise<Transaction> {
+export async function updateTransaction(status: string, invoiceId: string): Promise<Transaction> {
   const client = await pool.connect();
   try {
-    // Explicitly cast $1 to text to avoid type inconsistency issues
     const query = `
       UPDATE transaction
-      SET status = $1::text, 
-          completed_at = CASE 
+      SET 
+        status = $1::text, 
+        completed_at = CASE 
                           WHEN $1 = 'Selesai' THEN NOW() 
                           ELSE completed_at 
                         END,
-          ready_to_pick_up_at = CASE 
-                      WHEN $1 = 'Siap Diambil' THEN NOW() 
-                        ELSE ready_to_pick_up_at 
-                      END
-      WHERE id = $2
+        ready_to_pick_up_at = CASE 
+                                WHEN $1 = 'Siap Diambil' THEN NOW() 
+                                ELSE ready_to_pick_up_at 
+                              END
+      WHERE id = (
+        SELECT t.id
+        FROM transaction t
+        JOIN payment p ON t.id = p.transaction_id
+        WHERE p.invoice_id = $2
+      )
       RETURNING *;
     `;
-    const values = [status, transactionId];
+    const values = [status, invoiceId];
     
     const result = await client.query(query, values);
   
@@ -176,51 +181,46 @@ export async function updateTransaction(status: string, transactionId: string): 
  * @param {string} transactionId - The ID of the transaction to retrieve.
  * @returns {Promise<Transaction | null>} - A promise that resolves to the transaction details or null if not found.
  */
-export async function getTransactionById(transactionId: string): Promise<Transaction | null> {
+export async function getTransactionById(transactionId: string): Promise<TransactionDetails | null> {
   const client = await pool.connect();
   try {
     const query = `
-        SELECT 
-            t.id AS transaction_id,
-            t.customer AS customer_id,
-            c.name AS customer_name,
-            t.duration AS duration_id,
-            d.name AS duration_name,
-            t.status AS transaction_status,
-            SUM(sd.price * ti.qty) AS total,
-            json_agg(
-                json_build_object(
-                    'service', s.id,
-                    'service_name', s.name,
-                    'qty', ti.qty
-                )
-            ) AS items
-        FROM transaction t
-        LEFT JOIN customer c ON t.customer = c.id
-        LEFT JOIN duration d ON t.duration = d.id
-        LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
-        LEFT JOIN service s ON ti.service = s.id
-        LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
-        WHERE t.id = $1
-        GROUP BY t.id, t.customer, c.name, d.name, t.duration, t.status
-      `;
+      SELECT 
+        t.id AS transaction_id,
+        t.customer AS customer_id,
+        c.name AS customer_name,
+        c.phone_number AS customer_phone_number,
+        d.name AS duration_name,
+        t.status AS transaction_status,
+        p.invoice_id AS invoice,
+        SUM(sd.price * ti.qty) AS total,
+        p.status AS payment_status,
+        p.id AS payment_id,
+        json_agg(
+          json_build_object(
+            'service_id', s.id,
+            'service_name', s.name,
+            'price', sd.price,
+            'quantity', ti.qty
+          )
+        ) AS services
+      FROM transaction t
+      LEFT JOIN customer c ON t.customer = c.id
+      LEFT JOIN duration d ON t.duration = d.id
+      LEFT JOIN payment p ON t.id = p.transaction_id
+      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
+      LEFT JOIN service s ON ti.service = s.id
+      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
+      WHERE p.invoice_id = $1
+      GROUP BY t.id, t.customer, c.name, c.phone_number, d.name, p.invoice_id, p.id, p.status, t.status
+    `;
 
     const result = await client.query(query, [transactionId]);
     if (result.rows.length === 0) {
       return null; // No transaction found
     }
 
-    const row = result.rows[0];
-    return {
-      id: row.transaction_id,
-      customer: row.customer_id,
-      customer_name: row.customer_name,
-      duration: row.duration_id,
-      duration_name: row.duration_name,
-      total: row.total,
-      status: row.transaction_status,
-      items: row.items
-    };
+    return result.rows[0];
   } finally {
     client.release();
   }

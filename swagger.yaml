@@ -798,7 +798,7 @@
         }
       }
     },
-    "/payment/{id}": {
+    "/payment/{invoiceId}": {
       "put": {
         "summary": "Update a payment",
         "description": "Update an existing payment record, including the status, payment received, and change given.",
@@ -807,7 +807,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "invoiceId",
             "in": "path",
             "required": true,
             "schema": {
@@ -841,6 +841,41 @@
           },
           "404": {
             "description": "Pembayaran tidak ditemukan"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get payment details by invoice ID",
+        "description": "Retrieve the payment details, including services and total amount due, for a specific payment by its invoice ID.",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, invoice ID is required"
+          },
+          "404": {
+            "description": "Payment not found"
           }
         }
       }
@@ -1664,18 +1699,6 @@
       "Payment": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the payment"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of the payment",
-            "enum": [
-              "Belum Dibayar",
-              "Lunas"
-            ]
-          },
           "payment_received": {
             "type": "number",
             "description": "The total amount of payment received"

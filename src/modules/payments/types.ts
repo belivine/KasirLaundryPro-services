@@ -14,3 +14,19 @@ export interface Payment {
   payment_received: string;
   change_given: string;
 }
+
+
+export interface Service {
+  service_id: string;
+  service_name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface PaymentDetails {
+  paymentId: string;
+  invoice: string;
+  total: number;
+  paymentStatus: string;
+  services: Service[];
+}

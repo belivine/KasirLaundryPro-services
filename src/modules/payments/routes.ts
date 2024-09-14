@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { updatePayment } from "./controller";
+import { getPaymentByInvoiceId, updatePayment } from "./controller";
 import { AuthenticatedRequest } from "src/middlewares";
 
 const router = express.Router();
@@ -18,13 +18,6 @@ const router = express.Router();
  *     Payment:
  *       type: object
  *       properties:
- *         id:
- *           type: string
- *           description: Unique identifier for the payment
- *         status:
- *           type: string
- *           description: Status of the payment
- *           enum: [Belum Dibayar, Lunas]
  *         payment_received:
  *           type: number
  *           description: The total amount of payment received
@@ -35,17 +28,17 @@ const router = express.Router();
 
 /**
  * @swagger
- * /payment/{id}:
+ * /payment/{invoiceId}:
  *   put:
  *     summary: Update a payment
  *     description: Update an existing payment record, including the status, payment received, and change given.
  *     tags: [Payment]
  *     parameters:
- *       - name: id
+ *       - name: invoiceId
  *         in: path
  *         required: true
  *         schema:
- *           type: string
+ *           type: string 
  *     requestBody:
  *       required: true
  *       content:
@@ -64,18 +57,18 @@ const router = express.Router();
  *       404:
  *         description: Pembayaran tidak ditemukan
  */
-router.put('/:id', async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { status, payment_received, change_given } = req.body;
+router.put('/:invoiceId', async (req: Request, res: Response) => {
+  const { invoiceId } = req.params;
+  const { payment_received, change_given } = req.body;
 
-  if (!status || !payment_received || !change_given) {
+  if (!payment_received || !change_given) {
     return res.status(400).json({
       error: 'Input tidak valid, status, payment_received, dan change_given diperlukan.'
     });
   }
 
   try {
-    const updatedPayment = await updatePayment(id, { status, payment_received, change_given });
+    const updatedPayment = await updatePayment(invoiceId, { payment_received, change_given });
     res.json({
       status: 'success',
       message: 'Pembayaran berhasil diperbarui',
@@ -84,6 +77,57 @@ router.put('/:id', async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     res.status(404).json({ error: 'Pembayaran tidak ditemukan' });
+  }
+});
+
+/**
+ * @swagger
+ * /payment/{invoiceId}:
+ *   get:
+ *     summary: Get payment details by invoice ID
+ *     description: Retrieve the payment details, including services and total amount due, for a specific payment by its invoice ID.
+ *     tags: [Payment]
+ *     parameters:
+ *       - name: invoiceId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Payment details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentDetails'
+ *       400:
+ *         description: Invalid input, invoice ID is required
+ *       404:
+ *         description: Payment not found
+ */
+router.get('/:invoiceId', async (req: Request, res: Response) => {
+  const { invoiceId } = req.params;
+
+  if (!invoiceId) {
+    return res.status(400).json({
+      error: 'Input tidak valid, invoice ID diperlukan.'
+    });
+  }
+
+  try {
+    const paymentDetails = await getPaymentByInvoiceId(invoiceId);
+    if (!paymentDetails) {
+      return res.status(404).json({ error: 'Pembayaran tidak ditemukan' });
+    }
+    
+    res.json({
+      status: 'success',
+      message: 'Detail pembayaran berhasil diambil',
+      data: paymentDetails
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
 

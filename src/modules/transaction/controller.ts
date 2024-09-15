@@ -19,7 +19,7 @@ export async function getTransactions(
       case "Diproses":
         dateColumn = "t.created_at";
         break;
-      case "Ready to Pick Up":
+      case "Siap Diambil":
         dateColumn = "t.ready_to_pick_up_at";
         break;
       case "Selesai":
@@ -188,6 +188,8 @@ export async function getTransactionById(transactionId: string): Promise<Transac
       SELECT 
         t.id AS transaction_id,
         t.customer AS customer_id,
+        t.ready_to_pick_up_at,
+        t.completed_at,
         c.name AS customer_name,
         c.phone_number AS customer_phone_number,
         d.name AS duration_name,
@@ -212,7 +214,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
       LEFT JOIN service s ON ti.service = s.id
       LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
       WHERE p.invoice_id = $1
-      GROUP BY t.id, t.customer, c.name, c.phone_number, d.name, p.invoice_id, p.id, p.status, t.status
+      GROUP BY t.id, t.customer, c.name, c.phone_number, d.name, p.invoice_id, p.id, p.status, t.status, t.ready_to_pick_up_at, t.completed_at
     `;
 
     const result = await client.query(query, [transactionId]);

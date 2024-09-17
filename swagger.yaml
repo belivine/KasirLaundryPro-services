@@ -536,6 +536,14 @@
               "type": "string"
             },
             "description": "Filter Data by name, duration, type"
+          },
+          {
+            "in": "query",
+            "name": "hasSerivce",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter Data by services availability"
           }
         ],
         "responses": {
@@ -827,7 +835,7 @@
         },
         "responses": {
           "200": {
-            "description": "Pembayaran berhasil diperbarui",
+            "description": "Payment successfully updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -837,10 +845,10 @@
             }
           },
           "400": {
-            "description": "Permintaan tidak valid, input salah"
+            "description": "Invalid request, wrong input"
           },
           "404": {
-            "description": "Pembayaran tidak ditemukan"
+            "description": "Payment not found"
           }
         }
       },
@@ -1696,16 +1704,44 @@
           }
         }
       },
-      "Payment": {
+      "ServicePayment": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "description": "The unique identifier of the service."
+          },
+          "service_name": {
+            "type": "string",
+            "description": "The name of the service."
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the service."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "The quantity of the service."
+          }
+        }
+      },
+      "PaymentDetails": {
         "type": "object",
         "properties": {
           "payment_received": {
             "type": "number",
-            "description": "The total amount of payment received"
+            "description": "The total amount of payment received."
           },
           "change_given": {
             "type": "number",
-            "description": "The amount of change returned to the customer"
+            "description": "The amount of change returned to the customer."
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicePayment"
+            },
+            "description": "List of services included in the payment."
           }
         }
       },

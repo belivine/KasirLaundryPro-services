@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { getPaymentByInvoiceId, updatePayment } from "./controller";
-import { AuthenticatedRequest } from "src/middlewares";
 
 const router = express.Router();
 
@@ -15,15 +14,35 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
- *     Payment:
+ *     ServicePayment:
+ *       type: object
+ *       properties:
+ *         service_id:
+ *           type: string
+ *           description: The unique identifier of the service.
+ *         service_name:
+ *           type: string
+ *           description: The name of the service.
+ *         price:
+ *           type: number
+ *           description: The price of the service.
+ *         quantity:
+ *           type: number
+ *           description: The quantity of the service.
+ *     PaymentDetails:
  *       type: object
  *       properties:
  *         payment_received:
  *           type: number
- *           description: The total amount of payment received
+ *           description: The total amount of payment received.
  *         change_given:
  *           type: number
- *           description: The amount of change returned to the customer
+ *           description: The amount of change returned to the customer.
+ *         services:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ServicePayment'
+ *           description: List of services included in the payment.
  */
 
 /**
@@ -38,7 +57,7 @@ const router = express.Router();
  *         in: path
  *         required: true
  *         schema:
- *           type: string 
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -47,15 +66,15 @@ const router = express.Router();
  *             $ref: '#/components/schemas/Payment'
  *     responses:
  *       200:
- *         description: Pembayaran berhasil diperbarui
+ *         description: Payment successfully updated
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Payment'
  *       400:
- *         description: Permintaan tidak valid, input salah
+ *         description: Invalid request, wrong input
  *       404:
- *         description: Pembayaran tidak ditemukan
+ *         description: Payment not found
  */
 router.put('/:invoiceId', async (req: Request, res: Response) => {
   const { invoiceId } = req.params;
@@ -63,7 +82,7 @@ router.put('/:invoiceId', async (req: Request, res: Response) => {
 
   if (!payment_received || !change_given) {
     return res.status(400).json({
-      error: 'Input tidak valid, status, payment_received, dan change_given diperlukan.'
+      error: 'Invalid input, payment_received and change_given are required.'
     });
   }
 
@@ -71,12 +90,12 @@ router.put('/:invoiceId', async (req: Request, res: Response) => {
     const updatedPayment = await updatePayment(invoiceId, { payment_received, change_given });
     res.json({
       status: 'success',
-      message: 'Pembayaran berhasil diperbarui',
+      message: 'Payment successfully updated',
       data: updatedPayment
     });
   } catch (error) {
     console.log(error);
-    res.status(404).json({ error: 'Pembayaran tidak ditemukan' });
+    res.status(404).json({ error: 'Payment not found' });
   }
 });
 
@@ -110,24 +129,24 @@ router.get('/:invoiceId', async (req: Request, res: Response) => {
 
   if (!invoiceId) {
     return res.status(400).json({
-      error: 'Input tidak valid, invoice ID diperlukan.'
+      error: 'Invalid input, invoice ID is required.'
     });
   }
 
   try {
     const paymentDetails = await getPaymentByInvoiceId(invoiceId);
     if (!paymentDetails) {
-      return res.status(404).json({ error: 'Pembayaran tidak ditemukan' });
+      return res.status(404).json({ error: 'Payment not found' });
     }
     
     res.json({
       status: 'success',
-      message: 'Detail pembayaran berhasil diambil',
+      message: 'Payment details retrieved successfully',
       data: paymentDetails
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    res.status(500).json({ error: 'Server error occurred' });
   }
 });
 

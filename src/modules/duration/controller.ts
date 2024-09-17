@@ -5,17 +5,25 @@ import { Duration, DurationType } from "./types";
  * Retrieve all durations from the database.
  * @returns {Promise<Duration[]>} - A promise that resolves to an array of durations.
  */
-export async function getDurations(filter: string | null, merchant_id?: string): Promise<Duration[]> {
+export async function getDurations(filter: string | null,hasService?: boolean, merchant_id?: string): Promise<Duration[]> {
   const client = await pool.connect();
   try {
-    const query = `
-      SELECT * FROM duration 
+    let query = `
+      SELECT duration.* FROM duration 
+      LEFT JOIN service_duration ON duration.id = service_duration.duration
       WHERE (($1::text IS NULL OR duration.name ILIKE '%' || $1 || '%')
       OR ($1::text IS NULL OR duration.duration::text ILIKE '%' || $1 || '%')
       OR ($1::text IS NULL OR duration.type::text ILIKE '%' || $1 || '%'))
       AND merchant_id = $2
-      ORDER BY created_at DESC
     `
+    
+    if (hasService) {
+      query += `
+        AND service_duration.id IS NOT NULL
+      `
+    }
+
+    query += " ORDER BY duration.created_at DESC"
     const res = await client.query(query, [filter, merchant_id]);
     return res.rows;
   } finally {

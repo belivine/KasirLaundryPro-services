@@ -166,6 +166,7 @@ export async function updateTransaction(status: string, invoiceId: string): Prom
       )
       RETURNING *;
     `;
+    
     const values = [status, invoiceId];
     
     const result = await client.query(query, values);

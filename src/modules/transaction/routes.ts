@@ -1,8 +1,6 @@
 import express, { Request, Response } from "express";
 import {
-  Transaction,
   transactionSchema,
-  transactionUpdateSchema,
 } from "./types";
 import {
   addTransaction,
@@ -10,7 +8,7 @@ import {
   getTransactions,
   updateTransaction,
 } from "./controller";
-import { AuthenticatedRequest } from "src/middlewares";
+import { AuthenticatedRequest } from "../../middlewares";
 
 const router = express.Router();
 
@@ -33,10 +31,10 @@ const router = express.Router();
  *           description: Unique identifier for the transaction
  *         customer:
  *           type: string
- *           description: Customer's Name
+ *           description: UUID of the customer
  *         duration:
  *           type: string
- *           description: Duration Name
+ *           description: UUID of the duration
  *         status:
  *           type: string
  *           description: Status of the transaction
@@ -51,23 +49,36 @@ const router = express.Router();
  *           type: string
  *           description: UUID of the customer
  *           example: "550e8400-e29b-41d4-a716-446655440000"
- *         duration:
- *           type: string
- *           description: UUID of the duration
- *           example: "550e8400-e29b-41d4-a716-446655440001"
  *         customer_name:
  *           type: string
  *           description: Customer's Name
  *           example: "Brian Kliwon"
+ *         customer_phone_number:
+ *           type: string
+ *           description: Customer's Phone Number
+ *           example: "+1234567890"
  *         duration_name:
  *           type: string
- *           description: Duration Name
+ *           description: Name of the duration
  *           example: "Express"
- *         status:
+ *         total:
+ *           type: number
+ *           format: float
+ *           description: Total amount for the transaction
+ *           example: 150.75
+ *         payment_id:
+ *           type: integer
+ *           description: ID of the associated payment
+ *           example: 12345
+ *         payment_status:
  *           type: string
- *           description: Status of the transaction
- *           enum: [Diproses, Selesai, Siap Diambil]
- *         items:
+ *           description: Status of the payment
+ *           example: "Completed"
+ *         invoice:
+ *           type: string
+ *           description: Invoice number associated with the transaction
+ *           example: "INV-001"
+ *         services:
  *           type: array
  *           items:
  *             type: object
@@ -87,10 +98,12 @@ const router = express.Router();
  *           example: [
  *             {
  *               service: "550e8400-e29b-41d4-a716-446655440000",
+ *               service_name: "Service A",
  *               qty: 2
  *             },
  *             {
  *               service: "550e8400-e29b-41d4-a716-446655440001",
+ *               service_name: "Service B",
  *               qty: 3
  *             }
  *           ]
@@ -195,26 +208,19 @@ const router = express.Router();
  */
 router.get("/", async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Extract query parameters from the request
-    const status = req.query.status as string | null;
-    const filter = req.query.filter as string | null;
-    const date_from = req.query.date_from as string | null;
-    const date_to = req.query.date_to as string | null;
+    const { status, filter, date_from, date_to } = req.query;
 
-    // Call the getTransactions function with extracted parameters
     const transactions = await getTransactions(
-      status || null,
-      filter || null,
-      date_from || null,
-      date_to || null,
-      req.userId // Assuming the user's merchant_id is retrieved from req.userId
+      status as string || null,
+      filter as string || null,
+      date_from as string || null,
+      date_to as string || null,
+      req.userId
     );
 
-    // Send the response with the transactions data
     res.json(transactions);
   } catch (error) {
-    // Handle and return any errors that occur
-    const err = error as Error; // Type assertion
+    const err = error as Error;
     res.status(500).json({ error: err.message });
   }
 });
@@ -246,37 +252,32 @@ router.get("/", async (req: AuthenticatedRequest, res: Response) => {
 router.post("/", async (req: AuthenticatedRequest, res) => {
   const { error } = transactionSchema.validate(req.body);
   if (error) {
-    return res
-      .status(400)
-      .json({ status: "error", message: error.details[0].message });
+    return res.status(400).json({ status: "error", message: error.details[0].message });
   }
 
   try {
-    const newService = await addTransaction(req.body, req.userId);
+    const newTransaction = await addTransaction(req.body, req.userId);
     res.status(201).json({
       status: "success",
       message: "Transaksi berhasil dibuat",
-      data: newService,
+      data: newTransaction,
     });
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ status: "error", message: "Transaksi gagal dibuat" });
+    res.status(500).json({ status: "error", message: "Transaksi gagal dibuat" });
   }
 });
 
 /**
  * @swagger
- * /transaction/{id}:
+ * /transaction/{invoiceId}:
  *   put:
  *     summary: Update the status of a transaction
- *     description: Update only the status field of an existing transaction record by ID, allowing only "Siap Diambil" or "Selesai" as valid statuses.
+ *     description: Update the status field of an existing transaction record by ID.
  *     tags:
  *       - Transaction
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: invoiceId
  *         required: true
  *         schema:
  *           type: string
@@ -304,86 +305,71 @@ router.post("/", async (req: AuthenticatedRequest, res) => {
  *       404:
  *         description: Transaction item not found
  */
-router.put('/:id', async (req, res) => {
-  // Check if the body contains only the status field
-  if (!req.body || typeof req.body.status !== 'string') {
-    return res.status(400).json({
-      errors: [{
-        type: 'body',
-        msg: 'Isi permintaan harus berisi field "status" yang valid.',
-      }],
-    });
+router.put("/:invoiceId", async (req, res) => {
+  if (!req.body || typeof req.body.status !== "string") {
+    return res.status(400).json({ error: 'Invalid request. "status" field is required.' });
   }
-
-  const { status } = req.body;
-
-  // Allow only 'Siap Diambil' or 'Selesai' as the valid status
-  const validStatuses = ['Siap Diambil', 'Selesai'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({
-      error: 'Status tidak valid. Hanya "Siap Diambil" dan "Selesai" yang diperbolehkan.',
-    });
-  }
-
-  const transactionId = req.params.id;
 
   try {
-    const updatedTransaction = await updateTransaction(status, transactionId);
-    res.json({ status: 'sukses', pesan: 'Status transaksi berhasil diperbarui', data: updatedTransaction });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        res.status(404).json({ error: 'Transaksi tidak ditemukan' });
-      } else {
-        res.status(500).json({ error: error.message });
-      }
+    const invoiceId = req.params.invoiceId;
+    const updatedTransaction = await updateTransaction(req.body.status, invoiceId);
+
+    if (updatedTransaction) {
+      res.status(200).json({
+        status: "success",
+        message: "Transaction status updated successfully",
+        data: updatedTransaction,
+      });
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+      res.status(404).json({
+        status: "error",
+        message: "Transaction not found",
+      });
     }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-
 /**
  * @swagger
- * /transaction/{id}:
+ * /transaction/{invoiceId}:
  *   get:
- *     summary: Get transaction item details
- *     description: Retrieve details of a specific transaction item by ID
+ *     summary: Get transaction by ID
+ *     description: Retrieve a transaction by its ID, including the customer, duration, status, and a list of items.
  *     tags:
  *       - Transaction
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: invoiceId
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the transaction item to retrieve
+ *         description: The ID of the transaction to retrieve
  *     responses:
  *       200:
- *         description: Successful retrieval
+ *         description: Successfully retrieved the transaction details
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/TransactionDetail'
  *       404:
- *         description: Transaction item not found
+ *         description: Transaction not found
+ *       500:
+ *         description: Internal server error
  */
-router.get("/:id", async (req, res) => {
-  const transactionId = req.params.id;
-
+router.get("/:invoiceId", async (req: Request, res: Response) => {
   try {
-    const duration = await getTransactionById(transactionId);
-    if (!duration) {
-      return res.status(404).json({ error: "Transaksi tidak ditemukan" });
-    }
-    res.json(duration);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+    const invoiceId = req.params.invoiceId;
+    const transaction = await getTransactionById(invoiceId);
+
+    if (transaction) {
+      res.status(200).json(transaction);
     } else {
-      res.status(500).json({ error: "Terjadi kesalahan server" });
+      res.status(404).json({ status: "error", message: "Transaction not found" });
     }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

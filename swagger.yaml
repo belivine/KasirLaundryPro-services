@@ -1161,17 +1161,17 @@
         }
       }
     },
-    "/transaction/{id}": {
+    "/transaction/{invoiceId}": {
       "put": {
         "summary": "Update the status of a transaction",
-        "description": "Update only the status field of an existing transaction record by ID, allowing only \"Siap Diambil\" or \"Selesai\" as valid statuses.",
+        "description": "Update the status field of an existing transaction record by ID.",
         "tags": [
           "Transaction"
         ],
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "invoiceId",
             "required": true,
             "schema": {
               "type": "string"
@@ -1216,25 +1216,25 @@
         }
       },
       "get": {
-        "summary": "Get transaction item details",
-        "description": "Retrieve details of a specific transaction item by ID",
+        "summary": "Get transaction by ID",
+        "description": "Retrieve a transaction by its ID, including the customer, duration, status, and a list of items.",
         "tags": [
           "Transaction"
         ],
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "invoiceId",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "description": "ID of the transaction item to retrieve"
+            "description": "The ID of the transaction to retrieve"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful retrieval",
+            "description": "Successfully retrieved the transaction details",
             "content": {
               "application/json": {
                 "schema": {
@@ -1244,7 +1244,10 @@
             }
           },
           "404": {
-            "description": "Transaction item not found"
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -1947,11 +1950,11 @@
           },
           "customer": {
             "type": "string",
-            "description": "Customer's Name"
+            "description": "UUID of the customer"
           },
           "duration": {
             "type": "string",
-            "description": "Duration Name"
+            "description": "UUID of the duration"
           },
           "status": {
             "type": "string",
@@ -1976,31 +1979,43 @@
             "description": "UUID of the customer",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "duration": {
-            "type": "string",
-            "description": "UUID of the duration",
-            "example": "550e8400-e29b-41d4-a716-446655440001"
-          },
           "customer_name": {
             "type": "string",
             "description": "Customer's Name",
             "example": "Brian Kliwon"
           },
+          "customer_phone_number": {
+            "type": "string",
+            "description": "Customer's Phone Number",
+            "example": "+1234567890"
+          },
           "duration_name": {
             "type": "string",
-            "description": "Duration Name",
+            "description": "Name of the duration",
             "example": "Express"
           },
-          "status": {
-            "type": "string",
-            "description": "Status of the transaction",
-            "enum": [
-              "Diproses",
-              "Selesai",
-              "Siap Diambil"
-            ]
+          "total": {
+            "type": "number",
+            "format": "float",
+            "description": "Total amount for the transaction",
+            "example": 150.75
           },
-          "items": {
+          "payment_id": {
+            "type": "integer",
+            "description": "ID of the associated payment",
+            "example": 12345
+          },
+          "payment_status": {
+            "type": "string",
+            "description": "Status of the payment",
+            "example": "Completed"
+          },
+          "invoice": {
+            "type": "string",
+            "description": "Invoice number associated with the transaction",
+            "example": "INV-001"
+          },
+          "services": {
             "type": "array",
             "items": {
               "type": "object",
@@ -2025,10 +2040,12 @@
             "example": [
               {
                 "service": "550e8400-e29b-41d4-a716-446655440000",
+                "service_name": "Service A",
                 "qty": 2
               },
               {
                 "service": "550e8400-e29b-41d4-a716-446655440001",
+                "service_name": "Service B",
                 "qty": 3
               }
             ]

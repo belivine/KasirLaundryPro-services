@@ -43,6 +43,24 @@ const router = express.Router();
  *           items:
  *             $ref: '#/components/schemas/ServicePayment'
  *           description: List of services included in the payment.
+ *     PaymentResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         message:
+ *           type: string
+ *           example: "Pembayaran berhasil dilakukan"
+ *     PaymentRequest:
+ *       type: object
+ *       properties:
+ *         payment_received:
+ *           type: number
+ *           example: 100000
+ *         change_given:
+ *           type: number
+ *           example: 30000
  */
 
 /**
@@ -63,14 +81,14 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Payment'
+ *             $ref: '#/components/schemas/PaymentRequest'
  *     responses:
  *       200:
  *         description: Payment successfully updated
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Payment'
+ *               $ref: '#/components/schemas/PaymentResponse'
  *       400:
  *         description: Invalid request, wrong input
  *       404:

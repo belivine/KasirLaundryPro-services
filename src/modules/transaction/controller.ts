@@ -1,4 +1,4 @@
-import { Transaction, TransactionData, TransactionDetails } from "./types";
+import { InvoiceDetails, Transaction, TransactionData, TransactionDetails } from "./types";
 import pool from "../../database/postgres";
 import { addPayment } from "../payments/controller";
 
@@ -48,7 +48,7 @@ export async function getTransactions(
 
     // Add date range condition
     if (date_from && date_to) {
-      conditions.push(`${dateColumn} BETWEEN $${values.length + 1}::date AND $${values.length + 2}::date`);
+      conditions.push(`${dateColumn}::date BETWEEN $${values.length + 1}::date AND $${values.length + 2}::date`);
       values.push(date_from, date_to);
     }
 
@@ -74,7 +74,7 @@ export async function getTransactions(
       LEFT JOIN payment d ON t.id = d.transaction_id
       WHERE ${conditions.join(' AND ')}
     `;
-
+    
     // Execute the query
     const result = await client.query(query, values);
 
@@ -221,6 +221,69 @@ export async function getTransactionById(transactionId: string): Promise<Transac
     const result = await client.query(query, [transactionId]);
     if (result.rows.length === 0) {
       return null; // No transaction found
+    }
+
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Retrieve details of a specific invoice by its ID, including a nested list of items.
+ * @param {string} transactionId - The ID of the transaction to retrieve.
+ * @returns {Promise<InvoiceDetails | null>} - A promise that resolves to the transaction details or null if not found.
+ */
+export async function getInvoiceById(transactionId: string): Promise<InvoiceDetails | null> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+          json_build_object(
+              'name', u.name,
+              'logo', u.logo,
+              'address', u.address,
+              'note', n.notes
+          ) as merchant,
+          json_build_object(
+              'name', c.name,
+              'address', c.address,
+              'phone_number', c.phone_number,
+              'email', c.email
+          ) as customer,
+          json_build_object(
+              'entry_date', t.created_at,
+              'ready_to_pickup_date', t.ready_to_pick_up_at,
+              'completed_date', t.completed_at,
+              'duration', d.name,
+              'services', json_agg(
+                  json_build_object(
+                      'service_name', s.name,
+                      'price', sd.price,
+                      'quantity', ti.qty,
+                      'total_price', ti.qty * sd.price
+                  )
+              ),
+              'total_price', SUM(sd.price * ti.qty),
+              'payment_received', p.payment_received,
+              'change_given', p.change_given
+          ) as transaction
+      FROM transaction t
+      LEFT JOIN customer c ON t.customer = c.id
+      LEFT JOIN duration d ON t.duration = d.id
+      LEFT JOIN payment p ON t.id = p.transaction_id
+      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
+      LEFT JOIN service s ON ti.service = s.id
+      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
+      LEFT JOIN users u ON u.id = t.merchant_id
+      LEFT JOIN note n ON n.merchant_id = u.id
+      WHERE p.invoice_id = $1
+      GROUP BY t.id, u.id, c.id, n.notes, t.created_at, t.completed_at, d.id, p.id,t.ready_to_pick_up_at
+    `;
+
+    const result = await client.query(query, [transactionId]);
+    if (result.rows.length === 0) {
+      return null; // No Invoice found
     }
 
     return result.rows[0];

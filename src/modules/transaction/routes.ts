@@ -4,6 +4,7 @@ import {
 } from "./types";
 import {
   addTransaction,
+  getInvoiceById,
   getTransactionById,
   getTransactions,
   updateTransaction,
@@ -161,6 +162,88 @@ const router = express.Router();
  *           example: "Transaction created successfully"
  *         data:
  *           $ref: '#/components/schemas/TransactionDetail'
+ *     InvoiceDetail:
+ *       type: object
+ *       properties:
+ *         merchant:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *               description: Merchant's name
+ *             logo:
+ *               type: string
+ *               description: Merchant's logo URL
+ *             address:
+ *               type: string
+ *               description: Merchant's address
+ *             note:
+ *               type: string
+ *               description: Note from the merchant
+ *         customer:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *               description: Customer's name
+ *             address:
+ *               type: string
+ *               description: Customer's address
+ *             phone_number:
+ *               type: string
+ *               description: Customer's phone number
+ *             email:
+ *               type: string
+ *               description: Customer's email address
+ *         transaction:
+ *           type: object
+ *           properties:
+ *             entry_date:
+ *               type: string
+ *               format: date-time
+ *               description: The date the transaction was created
+ *             ready_to_pickup_date:
+ *               type: string
+ *               format: date-time
+ *               description: The date the transaction is ready for pickup
+ *             completed_date:
+ *               type: string
+ *               format: date-time
+ *               description: The date the transaction was completed
+ *             duration:
+ *               type: string
+ *               description: The duration of the service
+ *             services:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   service_name:
+ *                     type: string
+ *                     description: Name of the service
+ *                   price:
+ *                     type: number
+ *                     format: float
+ *                     description: Price of the service
+ *                   quantity:
+ *                     type: integer
+ *                     description: Quantity of the service
+ *                   total_price:
+ *                     type: number
+ *                     format: float
+ *                     description: Total price for the service (price * quantity)
+ *             total_price:
+ *               type: number
+ *               format: float
+ *               description: Total price of the transaction
+ *             payment_received:
+ *               type: number
+ *               format: float
+ *               description: Amount of payment received
+ *             change_given:
+ *               type: number
+ *               format: float
+ *               description: Change given to the customer
  */
 
 /**
@@ -323,11 +406,11 @@ router.put("/:invoiceId", async (req, res) => {
     } else {
       res.status(404).json({
         status: "error",
-        message: "Transaction not found",
+        message: "Transaksi tidak ditemukan",
       });
     }
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Gagal membuat layanan" });
   }
 });
 
@@ -354,9 +437,9 @@ router.put("/:invoiceId", async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/TransactionDetail'
  *       404:
- *         description: Transaction not found
+ *         description: Transaksi tidak ditemukan
  *       500:
- *         description: Internal server error
+ *         description: Gagal membuat layanan
  */
 router.get("/:invoiceId", async (req: Request, res: Response) => {
   try {
@@ -366,10 +449,52 @@ router.get("/:invoiceId", async (req: Request, res: Response) => {
     if (transaction) {
       res.status(200).json(transaction);
     } else {
-      res.status(404).json({ status: "error", message: "Transaction not found" });
+      res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Gagal membuat layanan" });
+  }
+});
+
+/**
+ * @swagger
+ * /transaction/invoice/{invoiceId}:
+ *   get:
+ *     summary: Get transaction by invoice ID
+ *     description: Retrieve a transaction by its invoice ID, including the merchant, customer, transaction details, and a list of services.
+ *     tags:
+ *       - Transaction
+ *     parameters:
+ *       - in: path
+ *         name: invoiceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The invoice ID of the transaction to retrieve.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the transaction details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InvoiceDetail'
+ *       404:
+ *         description: Transaksi tidak ditemukan
+ *       500:
+ *         description: Gagal membuat layanan
+ */
+router.get("/invoice/:invoiceId", async (req: Request, res: Response) => {
+  try {
+    const invoiceId = req.params.invoiceId;
+    const transaction = await getInvoiceById(invoiceId);
+
+    if (transaction) {
+      res.status(200).json(transaction);
+    } else {
+      res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Gagal membuat layanan" });
   }
 });
 

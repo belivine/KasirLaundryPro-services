@@ -116,20 +116,53 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
       await client.query(query.text, query.values);
     }
 
-    const transactionDetail = await getTransactionById(newTransactionId);
+    const totalPrice = await getInvoiceTotalPrice(newTransactionId);
+
+    //Generate Invoice ID
+    const invoiceId = generateInvoiceId();
 
     //Create Payment
-    const paymentDetail = await addPayment({
+    await addPayment({
       status: "Belum Dibayar",
-      invoice_id: generateInvoiceId(),
-      total_amount_due: transactionDetail?.total || 0,
+      invoice_id: invoiceId,
+      total_amount_due: totalPrice?.total || 0,
       transaction_id: newTransactionId
     }, merchant_id);
 
+    const transactionDetail = await getTransactionById(invoiceId);
     return {
-      transaction: transactionDetail,
-      payment: paymentDetail
+      transaction: transactionDetail
     }
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Retrieve price details of a specific transaction by its ID.
+ * @param {string} invoiceId - The ID of the transaction to retrieve.
+ */
+async function getInvoiceTotalPrice(transactionId: string): Promise<{total: number} | null> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+        SUM(sd.price * ti.qty) AS total
+      FROM transaction t
+      LEFT JOIN duration d ON t.duration = d.id
+      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
+      LEFT JOIN service s ON ti.service = s.id
+      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
+      WHERE t.id = $1
+      GROUP BY t.id
+    `;
+
+    const result = await client.query(query, [transactionId]);
+    if (result.rows.length === 0) {
+      return null; // No transaction found
+    }
+
+    return result.rows[0];
   } finally {
     client.release();
   }
@@ -179,20 +212,20 @@ export async function updateTransaction(status: string, invoiceId: string): Prom
 
 /**
  * Retrieve details of a specific transaction by its ID, including a nested list of items.
- * @param {string} transactionId - The ID of the transaction to retrieve.
+ * @param {string} invoiceId - The ID of the transaction to retrieve.
  * @returns {Promise<Transaction | null>} - A promise that resolves to the transaction details or null if not found.
  */
-export async function getTransactionById(transactionId: string): Promise<TransactionDetails | null> {
+export async function getTransactionById(invoiceId: string): Promise<TransactionDetails | null> {
   const client = await pool.connect();
   try {
     const query = `
       SELECT 
         t.id AS transaction_id,
         t.customer AS customer_id,
-        t.ready_to_pick_up_at,
-        t.completed_at,
         c.name AS customer_name,
         c.phone_number AS customer_phone_number,
+        t.ready_to_pick_up_at,
+        t.completed_at,
         d.name AS duration_name,
         t.status AS transaction_status,
         p.invoice_id AS invoice,
@@ -218,7 +251,7 @@ export async function getTransactionById(transactionId: string): Promise<Transac
       GROUP BY t.id, t.customer, c.name, c.phone_number, d.name, p.invoice_id, p.id, p.status, t.status, t.ready_to_pick_up_at, t.completed_at
     `;
 
-    const result = await client.query(query, [transactionId]);
+    const result = await client.query(query, [invoiceId]);
     if (result.rows.length === 0) {
       return null; // No transaction found
     }
@@ -231,10 +264,10 @@ export async function getTransactionById(transactionId: string): Promise<Transac
 
 /**
  * Retrieve details of a specific invoice by its ID, including a nested list of items.
- * @param {string} transactionId - The ID of the transaction to retrieve.
+ * @param {string} invoiceId - The ID of the transaction to retrieve.
  * @returns {Promise<InvoiceDetails | null>} - A promise that resolves to the transaction details or null if not found.
  */
-export async function getInvoiceById(transactionId: string): Promise<InvoiceDetails | null> {
+export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetails | null> {
   const client = await pool.connect();
   try {
     const query = `
@@ -281,7 +314,7 @@ export async function getInvoiceById(transactionId: string): Promise<InvoiceDeta
       GROUP BY t.id, u.id, c.id, n.notes, t.created_at, t.completed_at, d.id, p.id,t.ready_to_pick_up_at
     `;
 
-    const result = await client.query(query, [transactionId]);
+    const result = await client.query(query, [invoiceId]);
     if (result.rows.length === 0) {
       return null; // No Invoice found
     }

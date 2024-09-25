@@ -5,19 +5,34 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
 import { getUserDetails, updateUserDetails } from "../user/controller";
-import nodemailer from 'nodemailer';
+import * as dotenv from 'dotenv';
+import FormData from 'form-data';
+import Mailgun from 'mailgun.js';
 
 const router = express.Router();
-// Create a transporter object using Outlook's SMTP transport
-const transporter = nodemailer.createTransport({
-  host: 'smtp-mail.outlook.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.email,
-    pass: process.env.email_password,
-  },
+
+// Load environment variables from .env file
+dotenv.config();
+
+const mailgun = new Mailgun(FormData);
+const mg = mailgun.client({ 
+  username: 'api', 
+  key: process.env.MAILGUN_API_KEY || 'key-yourkeyhere' 
 });
+
+const sendEmailRegistration = async (registrationEmail: string, verificationToken: string) => {
+  const verificationUrl = `https://kasirlaundrypro.netlify.app/api/auth/verify-email?token=${verificationToken}`;
+
+  mg.messages.create(process.env.MAILGUN_DOMAIN || 'sandbox-123.mailgun.org', {
+      from: "Cuci Bayar GO <mailgun@sandbox0989021bbdba43afa8a7585f1e0de828.mailgun.org>",
+      to: [registrationEmail],
+      subject: 'Verifikasi Alamat Email Anda',
+      text: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
+      html: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
+  })
+  .then(msg => console.log('Verification email sent successfully:', msg))
+  .catch(err => console.error('Error sending verification email:', err));
+};
 
 /**
  * @swagger
@@ -285,16 +300,7 @@ router.post("/signup", async (req, res) => {
     });
 
     // Send verification email
-    const verificationUrl = `https://kasirlaundrypro.netlify.app/api/auth/verify-email?token=${verificationToken}`;
-    const mailOptions = {
-      from: 'Cuci Bayar GO <cucibayargo@outlook.com>',
-      to: email,
-      subject: 'Verifikasi Alamat Email Anda',
-      text: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
-      html: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
-    };
-    
-    await transporter.sendMail(mailOptions);
+    sendEmailRegistration(email, verificationToken);
 
     res.status(201).json({ message: "Daftar berhasil. Silahkan cek email anda untuk verifikasi"});
   } catch (err: any) {

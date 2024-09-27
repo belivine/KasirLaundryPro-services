@@ -25,7 +25,7 @@ export interface UserDetail {
     address?: string;
     id: string; // UUID v4
 }
-  
+
 export interface LoginInput {
     password: string;
     email: string;
@@ -91,8 +91,17 @@ export const ChangePasswordSchema = Joi.object({
     email: Joi.string().email().required(),
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(6).required(),
-  });
+});
 
-  export interface CustomJwtPayload extends JwtPayload {
+export interface CustomJwtPayload extends JwtPayload {
     id: string;
-  }
+}
+
+// Define an interface for the email options (for TypeScript typing)
+export interface MailOptions {
+    from: string;
+    to: string;
+    subject: string;
+    text: string;
+    html: string;
+}

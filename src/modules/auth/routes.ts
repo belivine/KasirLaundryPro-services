@@ -6,32 +6,37 @@ import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
 import { getUserDetails, updateUserDetails } from "../user/controller";
 import * as dotenv from 'dotenv';
-import FormData from 'form-data';
-import Mailgun from 'mailgun.js';
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
 const router = express.Router();
 
 // Load environment variables from .env file
 dotenv.config();
 
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({ 
-  username: 'api', 
-  key: process.env.MAILGUN_API_KEY || 'key-yourkeyhere' 
-});
+// Configure API key authorization: api-key
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY; // Set your Brevo API key here
 
 const sendEmailRegistration = async (registrationEmail: string, verificationToken: string) => {
   const verificationUrl = `https://kasirlaundrypro.netlify.app/api/auth/verify-email?token=${verificationToken}`;
 
-  mg.messages.create(process.env.MAILGUN_DOMAIN || 'sandbox-123.mailgun.org', {
-      from: "Cuci Bayar GO <mailgun@sandbox0989021bbdba43afa8a7585f1e0de828.mailgun.org>",
-      to: [registrationEmail],
-      subject: 'Verifikasi Alamat Email Anda',
-      text: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
-      html: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
-  })
-  .then(msg => console.log('Verification email sent successfully:', msg))
-  .catch(err => console.error('Error sending verification email:', err));
+  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+  const sendSmtpEmail = {
+    sender: { name: 'cucibayargo', email: 'laundryapps225@gmail.com' }, // Update with your sender email
+    to: [{ email: registrationEmail }],
+    subject: 'Verifikasi Alamat Email Anda',
+    textContent: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
+    htmlContent: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
+  };
+
+  try {
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('Verification email sent successfully:', response);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+  }
 };
 
 /**

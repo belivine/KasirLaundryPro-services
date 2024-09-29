@@ -7,7 +7,7 @@ export interface AuthenticatedRequest extends Request {
 
 const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   // Skip authentication for specific routes if needed
-  if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/docs') || req.path.startsWith('/transaction/invoice')) {
+  if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/docs') || req.path.startsWith('/api/transaction/invoice')) {
     return next();
   }
 

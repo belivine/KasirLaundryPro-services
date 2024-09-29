@@ -98,7 +98,7 @@ router.put('/:invoiceId', async (req: Request, res: Response) => {
   const { invoiceId } = req.params;
   const { payment_received, change_given } = req.body;
 
-  if (!payment_received || !change_given) {
+  if (!payment_received || change_given < 0) {
     return res.status(400).json({
       error: 'Invalid input, payment_received and change_given are required.'
     });

@@ -304,7 +304,7 @@ router.get("/", async (req: AuthenticatedRequest, res: Response) => {
     res.json(transactions);
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -390,7 +390,7 @@ router.post("/", async (req: AuthenticatedRequest, res) => {
  */
 router.put("/:invoiceId", async (req, res) => {
   if (!req.body || typeof req.body.status !== "string") {
-    return res.status(400).json({ error: 'Invalid request. "status" field is required.' });
+    return res.status(400).json({ message: 'Invalid request. "status" field is required.' });
   }
 
   try {
@@ -410,7 +410,7 @@ router.put("/:invoiceId", async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ error: "Gagal membuat layanan" });
+    res.status(500).json({ message: "Gagal membuat layanan" });
   }
 });
 
@@ -452,7 +452,7 @@ router.get("/:invoiceId", async (req: Request, res: Response) => {
       res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Gagal membuat layanan" });
+    res.status(500).json({ message: "Gagal membuat layanan" });
   }
 });
 
@@ -494,7 +494,7 @@ router.get("/invoice/:invoiceId", async (req: Request, res: Response) => {
       res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Gagal membuat layanan" });
+    res.status(500).json({ message: "Gagal membuat layanan" });
   }
 });
 

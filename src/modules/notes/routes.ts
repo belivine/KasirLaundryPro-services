@@ -75,7 +75,7 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
     }
   } catch (error) {
     const err = error as Error; // Type assertion
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -152,7 +152,7 @@ router.put("/", async (req: AuthenticatedRequest, res) => {
     }
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

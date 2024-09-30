@@ -107,9 +107,9 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
     res.json(durations);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -165,9 +165,9 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
     res.status(201).json({ status: 'success', message: 'Durasi berhasil', data: newDuration });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -234,12 +234,12 @@ router.put('/:id', async (req, res) => {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
-        res.status(404).json({ error: 'Durasi tidak ditemukan' });
+        res.status(404).json({ message: 'Durasi tidak ditemukan' });
       } else {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
       }
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -286,12 +286,12 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
-        res.status(404).json({ error: 'Durasi tidak ditemukan' });
+        res.status(404).json({ message: 'Durasi tidak ditemukan' });
       } else {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
       }
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });
@@ -326,14 +326,14 @@ router.get('/:id', async (req, res) => {
   try {
     const duration = await getDurationById(durationId);
     if (!duration) {
-      return res.status(404).json({ error: 'Durasi tidak ditemukan' });
+      return res.status(404).json({ message: 'Durasi tidak ditemukan' });
     }
     res.json(duration);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });

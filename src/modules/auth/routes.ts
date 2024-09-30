@@ -156,7 +156,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Password salah." });
     }
 
-    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "2d" });
+    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "5m" });
 
     res.cookie("auth_token", token, {
       httpOnly: true,
@@ -168,7 +168,7 @@ router.post("/login", async (req, res) => {
   } catch (err: any) {
     res
       .status(500)
-      .json({ message: "Terjadi kesalahan pada server.", error: err.message });
+      .json({ message: "Terjadi kesalahan pada server.", message: err.message });
   }
 });
 
@@ -218,7 +218,7 @@ router.post("/logout", async (req, res) => {
       res.status(200).json({ message: "Logout berhasil." });
     });
   } catch (err: any) {
-    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", message: err.message });
   }
 });
 
@@ -309,7 +309,7 @@ router.post("/signup", async (req, res) => {
 
     res.status(201).json({ message: "Daftar berhasil. Silahkan cek email anda untuk verifikasi"});
   } catch (err: any) {
-    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", message: err.message });
   }
 });
 
@@ -477,7 +477,7 @@ router.get("/verify-email", async (req, res) => {
 
     res.redirect("https://merchant-app-fe.vercel.app/"); 
   } catch (err: any) {
-    res.status(400).json({ message: "Link verifikasi sudah kedaluarsa.", error: err.message });
+    res.status(400).json({ message: "Link verifikasi sudah kedaluarsa.", message: err.message });
   }
 });
 

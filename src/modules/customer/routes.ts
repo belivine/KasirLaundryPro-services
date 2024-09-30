@@ -136,7 +136,7 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
     res.json(data);
   } catch (error) {
     const err = error as Error; // Type assertion
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -198,7 +198,7 @@ router.post("/", (req: AuthenticatedRequest, res: Response) => {
     )
     .catch((error) => {
       const err = error as Error;
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ message: err.message });
     });
 });
 
@@ -233,11 +233,11 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (customer) {
       res.json(customer);
     } else {
-      res.status(404).json({ error: "Customer not found" });
+      res.status(404).json({ message: "Customer not found" });
     }
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -300,7 +300,7 @@ router.put("/:id", (req: Request, res: Response) => {
     )
     .catch((error) => {
       const err = error as Error;
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ message: err.message });
     });
 });
 
@@ -331,11 +331,11 @@ router.delete("/:id", async (req: Request, res: Response) => {
     if (result) {
       res.status(200).json({ status: "success", message: "Customer deleted successfully" });
     } else {
-      res.status(404).json({ error: "Customer not found" });
+      res.status(404).json({ message: "Customer not found" });
     }
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

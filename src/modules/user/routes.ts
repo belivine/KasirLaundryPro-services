@@ -136,15 +136,15 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Gagal mengunggah file", error: error.message });
+        .json({ message: "Gagal mengunggah file", message: error.message });
     }
 
     // Respond with file details
     res.status(200).json({ filePath: `temp/${fileName}` });
-  } catch (error: any) {
+  } catch (message: any) {
     res
       .status(500)
-      .json({ message: "Terjadi kesalahan server.", error: error.message });
+      .json({ message: "Terjadi kesalahan server.", message: error.message });
   }
 });
 
@@ -173,11 +173,11 @@ router.get("/details", async (req: AuthenticatedRequest, res: Response) => {
     if (user) {
       res.json(user);
     } else {
-      res.status(404).json({ error: "User tidak ditemukan" });
+      res.status(404).json({ message: "User tidak ditemukan" });
     }
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -250,21 +250,21 @@ router.put('/:id', async (req: Request, res: Response) => {
       const newLogoPath = `logos/${id}/${fileName}`;
 
       // Move the logo from the temporary location to the final location
-      const { error: moveError } = await supabase.storage
+      const { message: moveError } = await supabase.storage
         .from('logos')
         .move(logo, newLogoPath);
 
       if (moveError) {
-        return res.status(500).json({ message: 'Gagal memindahkan file logo', error: moveError.message });
+        return res.status(500).json({ message: 'Gagal memindahkan file logo', message: moveError.message });
       }
 
       // Clean up the original temporary logo file if it was successfully moved
-      const { error: deleteError } = await supabase.storage
+      const { message: deleteError } = await supabase.storage
         .from('logos')
         .remove([logo]);
 
       if (deleteError) {
-        return res.status(500).json({ message: 'Gagal menghapus file logo sementara', error: deleteError.message });
+        return res.status(500).json({ message: 'Gagal menghapus file logo sementara', message: deleteError.message });
       }
 
       // Get the public URL for the new logo
@@ -287,7 +287,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Rincian pengguna berhasil diperbarui', user: updatedUser });
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ message: 'Terjadi kesalahan server.', error: err.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server.', message: err.message });
   }
 });
 

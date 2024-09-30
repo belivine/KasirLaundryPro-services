@@ -188,7 +188,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
     res.json(services);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Gagal mengambil layanan' });
+    res.status(500).json({ message: 'Gagal mengambil layanan' });
   }
 });
 
@@ -219,7 +219,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
   const { error } = serviceSchema.validate(req.body);
 
   if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+    return res.status(400).json({ message: error.details[0].message });
   }
 
   try {
@@ -231,7 +231,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Gagal membuat layanan' });
+    res.status(500).json({ message: 'Gagal membuat layanan' });
   }
 });
 
@@ -270,7 +270,7 @@ router.put('/:id', async (req, res) => {
   const { error } = serviceSchema.validate(req.body);
 
   if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+    return res.status(400).json({ message: error.details[0].message });
   }
 
   try {
@@ -281,7 +281,7 @@ router.put('/:id', async (req, res) => {
       data: updatedService
     });
   } catch (error) {
-    res.status(404).json({ error: 'Layanan tidak ditemukan' });
+    res.status(404).json({ message: 'Layanan tidak ditemukan' });
   }
 });
 
@@ -312,7 +312,7 @@ router.delete('/:id', async (req, res) => {
       message: 'Service deleted successfully'
     });
   } catch (error) {
-    res.status(404).json({ error: 'Layanan tidak ditemukan' });
+    res.status(404).json({ message: 'Layanan tidak ditemukan' });
   }
 });
 
@@ -346,14 +346,14 @@ router.get('/:id', async (req, res) => {
   try {
     const duration = await getServiceById(serciveId);
     if (!duration) {
-      return res.status(404).json({ error: 'Layanan tidak ditemukan' });
+      return res.status(404).json({ message: 'Layanan tidak ditemukan' });
     }
     res.json(duration);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ error: 'Terjadi kesalahan server' });
+      res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
   }
 });

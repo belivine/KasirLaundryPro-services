@@ -100,20 +100,20 @@ router.put('/:invoiceId', async (req: Request, res: Response) => {
 
   if (!payment_received || change_given < 0) {
     return res.status(400).json({
-      error: 'Invalid input, payment_received and change_given are required.'
+      message: 'Input tidak valid, payment_received dan change_given diperlukan.'
     });
   }
 
   try {
     const updatedPayment = await updatePayment(invoiceId, { payment_received, change_given });
     res.json({
-      status: 'success',
-      message: 'Payment successfully updated',
+      status: 'sukses',
+      message: 'Pembayaran berhasil diperbarui.',
       data: updatedPayment
     });
   } catch (error) {
     console.log(error);
-    res.status(404).json({ error: 'Payment not found' });
+    res.status(404).json({ message: 'Pembayaran tidak ditemukan.' });
   }
 });
 
@@ -147,25 +147,26 @@ router.get('/:invoiceId', async (req: Request, res: Response) => {
 
   if (!invoiceId) {
     return res.status(400).json({
-      error: 'Invalid input, invoice ID is required.'
+      message: 'Input tidak valid, ID faktur diperlukan.'
     });
   }
 
   try {
     const paymentDetails = await getPaymentByInvoiceId(invoiceId);
     if (!paymentDetails) {
-      return res.status(404).json({ error: 'Payment not found' });
+      return res.status(404).json({ message: 'Pembayaran tidak ditemukan.' });
     }
     
     res.json({
-      status: 'success',
-      message: 'Payment details retrieved successfully',
+      status: 'sukses',
+      message: 'Detail pembayaran berhasil diambil.',
       data: paymentDetails
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error occurred' });
+    res.status(500).json({ message: 'Terjadi kesalahan server.' });
   }
 });
+
 
 export default router;

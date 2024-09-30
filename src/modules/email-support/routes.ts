@@ -89,7 +89,7 @@ router.post("/", async (req: Request, res: Response) => {
     await insertRow(rowData).catch((error) => {
         const err = error as Error;
         console.log(err.message);
-        res.status(500).json({ error: "Aplikasi mengalami gangguan. Silakan kontak kami langsung melalui cucibayargo@gmail.com." });
+        res.status(500).json({ message: "Aplikasi mengalami gangguan. Silakan kontak kami langsung melalui cucibayargo@gmail.com." });
     });
     res.status(200).json({
         status: "success",

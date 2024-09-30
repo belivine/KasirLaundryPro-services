@@ -136,7 +136,7 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Gagal mengunggah file", message: error.message });
+        .json({ message: "Gagal mengunggah file" });
     }
 
     // Respond with file details
@@ -144,7 +144,7 @@ router.post("/upload-logo", upload.single("file"), async (req, res) => {
   } catch (message: any) {
     res
       .status(500)
-      .json({ message: "Terjadi kesalahan server.", message: error.message });
+      .json({ message: "Terjadi kesalahan server." });
   }
 });
 
@@ -250,21 +250,21 @@ router.put('/:id', async (req: Request, res: Response) => {
       const newLogoPath = `logos/${id}/${fileName}`;
 
       // Move the logo from the temporary location to the final location
-      const { message: moveError } = await supabase.storage
+      const { error: moveError } = await supabase.storage
         .from('logos')
         .move(logo, newLogoPath);
 
       if (moveError) {
-        return res.status(500).json({ message: 'Gagal memindahkan file logo', message: moveError.message });
+        return res.status(500).json({ message: 'Gagal memindahkan file logo' });
       }
 
       // Clean up the original temporary logo file if it was successfully moved
-      const { message: deleteError } = await supabase.storage
+      const { error: deleteError } = await supabase.storage
         .from('logos')
         .remove([logo]);
 
       if (deleteError) {
-        return res.status(500).json({ message: 'Gagal menghapus file logo sementara', message: deleteError.message });
+        return res.status(500).json({ message: 'Gagal menghapus file logo sementara'});
       }
 
       // Get the public URL for the new logo
@@ -287,7 +287,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Rincian pengguna berhasil diperbarui', user: updatedUser });
   } catch (error) {
     const err = error as Error;
-    res.status(500).json({ message: 'Terjadi kesalahan server.', message: err.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server.'});
   }
 });
 

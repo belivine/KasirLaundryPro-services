@@ -23,7 +23,7 @@ export async function getDurations(filter: string | null,hasService?: boolean, m
       `
     }
 
-    query += " ORDER BY duration.created_at DESC"
+    query += "GROUP BY duration.id ORDER BY duration.created_at DESC"
     const res = await client.query(query, [filter, merchant_id]);
     return res.rows;
   } finally {

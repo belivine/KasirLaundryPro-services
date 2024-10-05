@@ -1,5 +1,5 @@
 import pool from "../../database/postgres";
-import { Service } from "./types";
+import { Service, ServiceDurationDetail } from "./types";
 
 /**
 * Retrieve all services with their IDs and names from the database.
@@ -188,6 +188,32 @@ export async function deleteService(id: string): Promise<void> {
 
     // Delete the service
     await client.query('DELETE FROM service WHERE id = $1;', [id]);
+  } finally {
+    client.release();
+  }
+}
+
+
+export async function getServiceDurationDetail(service: string, duration: string): Promise<ServiceDurationDetail> {
+  console.log(service);
+  console.log(duration);
+  
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT
+        service.name,
+        service.unit,
+        service.id,
+        service_duration.price
+      FROM service
+      LEFT JOIN service_duration ON service_duration.service = service.id 
+      WHERE service.id = $1 AND service_duration.duration = $2
+    `
+     const result = await client.query(query, [service, duration]);
+     console.log(result.rows);
+     
+     return result.rowCount ? result.rows[0] : null;
   } finally {
     client.release();
   }

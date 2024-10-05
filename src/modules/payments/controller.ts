@@ -1,4 +1,6 @@
 import pool from "../../database/postgres";
+import { getCustomerById } from "../customer/controller";
+import { Customer } from "../customer/types";
 import { Payment, PaymentDetails, PaymentInput } from "./types";
 
 /**
@@ -16,7 +18,7 @@ export async function addPayment(
         const { status, invoice_id, transaction_id, total_amount_due } = payment;
 
         const query = `
-          INSERT INTO payment (status, invoice_id, transaction_id, total_amount_due, merchant_id)
+          INSERT INTO new_payment (status, invoice_id, transaction_id, total_amount_due, merchant_id)
           VALUES ($1, $2, $3, $4, $5) RETURNING id;
         `;
 
@@ -27,9 +29,6 @@ export async function addPayment(
             total_amount_due,
             merchant_id || null,  
         ];
-
-        const result = await client.query(query, values);
-        const newPaymentId = result.rows[0].id;
 
         const paymentDetail = await getPaymentByInvoiceId(invoice_id);
 
@@ -45,12 +44,12 @@ export async function addPayment(
  * @param paymentParams - The updated payment data (status and change given).
  * @returns {Promise<Payment>} - A promise that resolves to the updated payment.
  */
-export async function updatePayment(invoiceId: string, paymentParams: { change_given: number, payment_received: number }): Promise<Payment> {
+export async function updatePayment(invoiceId: string, paymentParams: { change_given: number, payment_received: number }): Promise<{customer : Customer}> {
     const client = await pool.connect();
     try {
       const { change_given, payment_received} = paymentParams;
       const query = `
-        UPDATE payment
+        UPDATE new_payment
         SET status = 'Lunas',
             payment_received = $1,
             change_given = $2
@@ -59,7 +58,9 @@ export async function updatePayment(invoiceId: string, paymentParams: { change_g
       `;
       const values = [payment_received, change_given, invoiceId];
       const result = await client.query(query, values);
-      return result.rows[0];
+
+      const customer = await getCustomerByPatmentId(result.rows[0].transaction_id);
+      return { customer: customer }
     } finally {
       client.release();
     }
@@ -77,25 +78,42 @@ export async function getPaymentByInvoiceId(invoiceId: string): Promise<PaymentD
             SELECT 
                 p.id AS payment_id,
                 p.invoice_id AS invoice,
-                SUM(sd.price * ti.qty) AS total,
+                SUM(ti.price * ti.qty) AS total,
                 p.status AS payment_status,
                 json_agg(
                     json_build_object(
-                        'service_id', s.id,
-                        'service_name', s.name,
-                        'price', sd.price,
+                        'service_id', ti.service_id,
+                        'service_name', ti.service_name,
+                        'price', ti.price,
                         'quantity', ti.qty
                     )
                 ) AS services
-            FROM transaction t
-            LEFT JOIN payment p ON t.id = p.transaction_id
-            LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
-            LEFT JOIN service s ON ti.service = s.id
-            LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = t.duration
+            FROM new_transaction t
+            LEFT JOIN new_payment p ON t.id = p.transaction_id
+            LEFT JOIN new_transaction_item ti ON t.id = ti.transaction_id
             WHERE p.invoice_id = $1
             GROUP BY p.id, p.invoice_id, p.status
         `, [invoiceId]);
 
+        return res.rows[0] || null;
+    } finally {
+        client.release();
+    }
+}
+
+async function getCustomerByPatmentId(payment: string) {
+    const client = await pool.connect();
+    try {
+        const res = await client.query(`
+            SELECT 
+                t.customer_id,
+                t.customer_name,
+                t.customer_email,
+                t.customer_phone_number,
+                t.customer_address
+            FROM new_transaction t
+            WHERE t.id = $1
+        `, [payment]);
         return res.rows[0] || null;
     } finally {
         client.release();

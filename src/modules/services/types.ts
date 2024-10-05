@@ -15,6 +15,13 @@ export interface Service {
   durations: Duration[];
 }
 
+export interface ServiceDurationDetail {
+  id: string;
+  name: string;
+  unit: string;
+  price: number;
+}
+
 export const serviceSchema = Joi.object({
   name: Joi.string().required().messages({
     'string.empty': 'Nama wajib diisi',

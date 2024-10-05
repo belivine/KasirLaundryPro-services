@@ -346,6 +346,7 @@ router.post("/", async (req: AuthenticatedRequest, res) => {
       data: newTransaction,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ status: "error", message: "Transaksi gagal dibuat" });
   }
 });
@@ -494,6 +495,7 @@ router.get("/invoice/:invoiceId", async (req: Request, res: Response) => {
       res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan" });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Gagal membuat layanan" });
   }
 });

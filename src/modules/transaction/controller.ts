@@ -1,6 +1,9 @@
-import { InvoiceDetails, Transaction, TransactionData, TransactionDetails } from "./types";
+import { InvoiceDetails, Transaction, TransactionData, TransactionDetails, TransactionQuery } from "./types";
 import pool from "../../database/postgres";
 import { addPayment } from "../payments/controller";
+import { getCustomerById } from "../customer/controller";
+import { getDurationById } from "../duration/controller";
+import { getServiceDurationDetail } from "../services/controller";
 
 export async function getTransactions(
   status: string | null = null,
@@ -40,9 +43,9 @@ export async function getTransactions(
       values.push(status);
     }
 
-    // Add customer ID condition
+    // Add customer filter condition
     if (filter) {
-      conditions.push(`(c.name ILIKE '%' || $${values.length + 1} || '%' OR d.invoice_id ILIKE '%' || $${values.length + 1} || '%')`);
+      conditions.push(`(t.customer_name ILIKE '%' || $${values.length + 1} || '%' OR d.invoice_id ILIKE '%' || $${values.length + 1} || '%')`);
       values.push(filter);
     }
 
@@ -58,21 +61,21 @@ export async function getTransactions(
       values.push(merchant_id);
     }
 
-    // Construct query
+    // Construct query using dateColumn for ordering
     const query = `
       SELECT 
-          t.id AS id,
-          c.name AS customer,
-          d.status AS payment_status,
-          d.invoice_id AS invoice,
-          t.status,
-          t.created_at,
-          t.ready_to_pick_up_at,
-          t.completed_at
-      FROM transaction t
-      LEFT JOIN customer c ON t.customer = c.id
-      LEFT JOIN payment d ON t.id = d.transaction_id
-      WHERE ${conditions.join(' AND ')}
+        t.id AS id,
+        t.customer_name AS customer,
+        p.status AS payment_status,
+        p.invoice_id AS invoice,
+        t.status,
+        t.created_at,
+        t.ready_to_pick_up_at,
+        t.completed_at
+      FROM new_transaction t
+      LEFT JOIN new_payment p ON t.id = p.transaction_id
+      WHERE ${conditions.length > 0 ? conditions.join(' AND ') : 'TRUE'}
+      ORDER BY ${dateColumn} DESC
     `;
     
     // Execute the query
@@ -84,6 +87,7 @@ export async function getTransactions(
   }
 }
 
+
 /**
  * Add a new transaction to the database.
  * @param transaction - The transaction data to add.
@@ -93,24 +97,55 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
   const client = await pool.connect();
   try {
     const { customer, duration, status, items } = transaction;
+    const customerDetail = await getCustomerById(customer);
+    const durationDetail = await getDurationById(duration);
+
     const query = `
-        INSERT INTO transaction (customer, duration, status, merchant_id)
-        VALUES ($1, $2, $3, $4) RETURNING id;
-      `;
-    const values = [customer, duration, status, merchant_id];
+      INSERT INTO new_transaction (
+        customer_id, 
+        customer_name, 
+        customer_phone_number, 
+        customer_email, 
+        customer_address, 
+        duration_id, 
+        duration_name,
+        duration_length,
+        duration_length_type,
+        status, 
+        merchant_id
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;
+    `;
+    const values = [
+      customerDetail?.id, 
+      customerDetail?.name,
+      customerDetail?.phone_number,
+      customerDetail?.email,
+      customerDetail?.address,
+      durationDetail?.id,
+      durationDetail?.name,
+      durationDetail?.duration,
+      durationDetail?.type, 
+      status, 
+      merchant_id
+    ];
     const result = await client.query(query, values);
     const newTransactionId = result.rows[0].id;
 
     // Insert service items
-    const transactionQueries = items?.map(item => {
-      return {
+    const transactionQueries: TransactionQuery[] = [];
+
+    for (const item of items || []) {
+      const serviceDetail = await getServiceDurationDetail(item.service, duration);
+      
+      transactionQueries.push({
         text: `
-            INSERT INTO transaction_item (transaction_id, service, qty)
-            VALUES ($1, $2, $3);
-          `,
-        values: [newTransactionId, item.service, item.qty],
-      };
-    }) ?? [];
+          INSERT INTO new_transaction_item (transaction_id, service_id, service_name, service_unit, price, qty)
+          VALUES ($1, $2, $3, $4, $5, $6);
+        `,
+        values: [newTransactionId, serviceDetail.id, serviceDetail.name, serviceDetail.unit, serviceDetail.price, item.qty],
+      });
+    }
 
     for (const query of transactionQueries) {
       await client.query(query.text, query.values);
@@ -118,10 +153,10 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
 
     const totalPrice = await getInvoiceTotalPrice(newTransactionId);
 
-    //Generate Invoice ID
+    // Generate Invoice ID
     const invoiceId = generateInvoiceId();
 
-    //Create Payment
+    // Create Payment
     await addPayment({
       status: "Belum Dibayar",
       invoice_id: invoiceId,
@@ -138,6 +173,7 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
   }
 }
 
+
 /**
  * Retrieve price details of a specific transaction by its ID.
  * @param {string} invoiceId - The ID of the transaction to retrieve.
@@ -147,14 +183,10 @@ async function getInvoiceTotalPrice(transactionId: string): Promise<{total: numb
   try {
     const query = `
       SELECT 
-        SUM(sd.price * ti.qty) AS total
-      FROM transaction t
-      LEFT JOIN duration d ON t.duration = d.id
-      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
-      LEFT JOIN service s ON ti.service = s.id
-      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
-      WHERE t.id = $1
-      GROUP BY t.id
+        SUM(ti.price * ti.qty) AS total
+      FROM new_transaction_item ti
+      WHERE ti.transaction_id = $1
+      GROUP BY ti.transaction_id
     `;
 
     const result = await client.query(query, [transactionId]);
@@ -180,7 +212,7 @@ export async function updateTransaction(status: string, invoiceId: string): Prom
   const client = await pool.connect();
   try {
     const query = `
-      UPDATE transaction
+      UPDATE new_transaction
       SET 
         status = $1::text, 
         completed_at = CASE 
@@ -193,8 +225,8 @@ export async function updateTransaction(status: string, invoiceId: string): Prom
                               END
       WHERE id = (
         SELECT t.id
-        FROM transaction t
-        JOIN payment p ON t.id = p.transaction_id
+        FROM new_transaction t
+        JOIN new_payment p ON t.id = p.transaction_id
         WHERE p.invoice_id = $2
       )
       RETURNING *;
@@ -221,34 +253,30 @@ export async function getTransactionById(invoiceId: string): Promise<Transaction
     const query = `
       SELECT 
         t.id AS transaction_id,
-        t.customer AS customer_id,
-        c.name AS customer_name,
-        c.phone_number AS customer_phone_number,
+        t.customer_id AS customer_id,
+        t.customer_name AS customer_name,
+        t.customer_phone_number AS customer_phone_number,
         t.ready_to_pick_up_at,
         t.completed_at,
-        d.name AS duration_name,
+        t.duration_name,
         t.status AS transaction_status,
         p.invoice_id AS invoice,
-        SUM(sd.price * ti.qty) AS total,
+        SUM(ti.price * ti.qty) AS total,
         p.status AS payment_status,
         p.id AS payment_id,
         json_agg(
           json_build_object(
-            'service_id', s.id,
-            'service_name', s.name,
-            'price', sd.price,
+            'service_id', ti.service_id,
+            'service_name', ti.service_name,
+            'price', ti.price,
             'quantity', ti.qty
           )
         ) AS services
-      FROM transaction t
-      LEFT JOIN customer c ON t.customer = c.id
-      LEFT JOIN duration d ON t.duration = d.id
-      LEFT JOIN payment p ON t.id = p.transaction_id
-      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
-      LEFT JOIN service s ON ti.service = s.id
-      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
+      FROM new_transaction t
+      LEFT JOIN new_payment p ON t.id = p.transaction_id
+      LEFT JOIN new_transaction_item ti ON t.id = ti.transaction_id
       WHERE p.invoice_id = $1
-      GROUP BY t.id, t.customer, c.name, c.phone_number, d.name, p.invoice_id, p.id, p.status, t.status, t.ready_to_pick_up_at, t.completed_at
+      GROUP BY t.id, p.id
     `;
 
     const result = await client.query(query, [invoiceId]);
@@ -279,39 +307,35 @@ export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetails 
               'note', n.notes
           ) as merchant,
           json_build_object(
-              'name', c.name,
-              'address', c.address,
-              'phone_number', c.phone_number,
-              'email', c.email
+              'name', t.customer_name,
+              'address', t.customer_address,
+              'phone_number', t.customer_phone_number,
+              'email', t.customer_email
           ) as customer,
           json_build_object(
               'entry_date', TO_CHAR(t.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
               'ready_to_pickup_date', TO_CHAR(t.ready_to_pick_up_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
               'completed_date', TO_CHAR(t.completed_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
-              'duration', d.name,
+              'duration', t.duration_name,
               'services', json_agg(
                   json_build_object(
-                      'service_name', s.name,
-                      'price', sd.price,
+                      'service_name', ti.service_name,
+                      'price', ti.price,
                       'quantity', ti.qty,
-                      'total_price', ti.qty * sd.price
+                      'total_price', ti.qty * ti.price
                   )
               ),
-              'total_price', SUM(sd.price * ti.qty),
+              'total_price', SUM(ti.price * ti.qty),
               'payment_received', p.payment_received,
               'change_given', p.change_given
           ) as transaction
-      FROM transaction t
-      LEFT JOIN customer c ON t.customer = c.id
-      LEFT JOIN duration d ON t.duration = d.id
-      LEFT JOIN payment p ON t.id = p.transaction_id
-      LEFT JOIN transaction_item ti ON t.id = ti.transaction_id
-      LEFT JOIN service s ON ti.service = s.id
-      LEFT JOIN service_duration sd ON sd.service = s.id AND sd.duration = d.id
+      FROM new_transaction t
+      LEFT JOIN new_payment p ON t.id = p.transaction_id
+      LEFT JOIN new_transaction_item ti ON t.id = ti.transaction_id
       LEFT JOIN users u ON u.id = t.merchant_id
       LEFT JOIN note n ON n.merchant_id = u.id
       WHERE p.invoice_id = $1
-      GROUP BY t.id, u.id, c.id, n.notes, t.created_at, t.completed_at, d.id, p.id,t.ready_to_pick_up_at
+      GROUP BY t.id, u.id, n.id, p.id
     `;
 
     const result = await client.query(query, [invoiceId]);

@@ -156,7 +156,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Password salah." });
     }
 
-    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "5m" });
+    const token = jwt.sign({ id: user.id }, "secret_key", { expiresIn: "2d" });
 
     res.cookie("auth_token", token, {
       httpOnly: true,

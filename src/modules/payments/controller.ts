@@ -44,7 +44,7 @@ export async function addPayment(
  * @param paymentParams - The updated payment data (status and change given).
  * @returns {Promise<Payment>} - A promise that resolves to the updated payment.
  */
-export async function updatePayment(invoiceId: string, paymentParams: { change_given: number, payment_received: number }): Promise<{customer : Customer}> {
+export async function updatePayment(invoiceId: string, paymentParams: { change_given: number, payment_received: number }): Promise<{customer : Customer, invoice: string}> {
     const client = await pool.connect();
     try {
       const { change_given, payment_received} = paymentParams;
@@ -60,7 +60,7 @@ export async function updatePayment(invoiceId: string, paymentParams: { change_g
       const result = await client.query(query, values);
 
       const customer = await getCustomerByPatmentId(result.rows[0].transaction_id);
-      return { customer: customer }
+      return { customer: customer, invoice: result.rows[0].invoice_id }
     } finally {
       client.release();
     }

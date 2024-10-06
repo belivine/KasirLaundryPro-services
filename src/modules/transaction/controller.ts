@@ -100,6 +100,9 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
     const customerDetail = await getCustomerById(customer);
     const durationDetail = await getDurationById(duration);
 
+    console.log(customerDetail);
+    console.log(durationDetail);
+    
     const query = `
       INSERT INTO new_transaction (
         customer_id, 
@@ -131,6 +134,9 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
     ];
     const result = await client.query(query, values);
     const newTransactionId = result.rows[0].id;
+
+    console.log(result);
+    
 
     // Insert service items
     const transactionQueries: TransactionQuery[] = [];

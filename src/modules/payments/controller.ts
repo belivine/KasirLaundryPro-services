@@ -30,8 +30,8 @@ export async function addPayment(
             merchant_id || null,  
         ];
 
+        await client.query(query, values);
         const paymentDetail = await getPaymentByInvoiceId(invoice_id);
-
         return paymentDetail;
     } finally {
         client.release();

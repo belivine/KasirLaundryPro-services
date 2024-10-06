@@ -83,7 +83,7 @@ const router = express.Router();
  *            type: string
  *         description: Filter Data by name, duration, type
  *       - in: query
- *         name: hasSerivce
+ *         name: hasService
  *         schema:
  *            type: string
  *         description: Filter Data by services availability
@@ -100,10 +100,10 @@ const router = express.Router();
 router.get('/', async (req: AuthenticatedRequest, res) => {
   // Extract query parameters from the request
   const filter = req.query.filter as string | null;
-  const hasSerivce = req.query.hasSerivce == "true" ? true : false;
+  const hasService = req.query.hasService == "true" ? true : false;
 
   try {
-    const durations = await getDurations(filter, hasSerivce, req.userId);
+    const durations = await getDurations(filter, hasService, req.userId);
     res.json(durations);
   } catch (error) {
     if (error instanceof Error) {

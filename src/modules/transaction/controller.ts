@@ -45,7 +45,7 @@ export async function getTransactions(
 
     // Add customer filter condition
     if (filter) {
-      conditions.push(`(t.customer_name ILIKE '%' || $${values.length + 1} || '%' OR d.invoice_id ILIKE '%' || $${values.length + 1} || '%')`);
+      conditions.push(`(t.customer_name ILIKE '%' || $${values.length + 1} || '%' OR p.invoice_id ILIKE '%' || $${values.length + 1} || '%')`);
       values.push(filter);
     }
 

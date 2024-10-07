@@ -326,6 +326,7 @@ export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetails 
               'services', json_agg(
                   json_build_object(
                       'service_name', ti.service_name,
+                      'unit', ti.service_unit,
                       'price', ti.price,
                       'quantity', ti.qty,
                       'total_price', ti.qty * ti.price

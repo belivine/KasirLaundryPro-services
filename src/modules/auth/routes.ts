@@ -422,7 +422,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
       expiresIn: "2d",
     });
     res.cookie("auth_token", token, { httpOnly: true, sameSite: 'none', secure: true});
-    res.redirect("https://merchant-app-fe.vercel.app/order/ongoing"); 
+    res.redirect("https://merchant-app-fe.vercel.app/login-google"); 
   } else {
     res.status(500).json({ message: "Authentication failed" });
   }

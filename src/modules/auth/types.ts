@@ -87,6 +87,35 @@ export const SignUpSchema = Joi.object({
         }),
 });
 
+export interface SignUpTokenInput {
+    email: string;
+    name: string;
+    phone_number?: string;
+    token?: string;
+    status?: "signed" | "unsigned"
+}
+
+export const SignUpTokenSchema = Joi.object({
+    name: Joi.string()
+            .required()
+            .messages({
+                'string.empty': 'Nama harus diisi.',
+                'any.required': 'Nama harus diisi.'
+            }),
+    email: Joi.string()
+            .email()
+            .required()
+            .messages({
+                'string.email': 'Alamat email tidak valid.',
+                'any.required': 'Alamat email harus diisi.'
+            }),
+    phone_number: Joi.string()
+            .optional()
+            .messages({
+                'string.base': 'Nomor telepon harus berupa string.'
+            }),
+})
+
 export const ChangePasswordSchema = Joi.object({
     email: Joi.string().email().required(),
     currentPassword: Joi.string().required(),

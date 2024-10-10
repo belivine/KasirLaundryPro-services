@@ -1,5 +1,5 @@
 import pool from "../../database/postgres";
-import { SignUpInput, User } from "./types";
+import { SignUpInput, SignUpTokenInput, User } from "./types";
 import bcrypt from "bcrypt";
 
 /**
@@ -70,3 +70,17 @@ export async function changeUserPassword(email: string, currentPassword: string,
     }
   }
   
+export async function addUserSignUpToken(payload: Omit<SignUpTokenInput, 'id'>): Promise<void> {
+  const client = await pool.connect();
+  try {
+    const { name, email, phone_number, token, status} = payload;
+    const query = `
+      INSERT INTO users (name, email, phone_number, token, status)
+      VALUES ($1, $2, $3, $4, $5);
+    `;
+    const values = [name, email, phone_number, token, status];
+    await client.query(query, values);
+  } finally {
+    client.release();
+  }
+}

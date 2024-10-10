@@ -1,6 +1,6 @@
 import express from "express";
-import { ChangePasswordSchema, CustomJwtPayload, LoginSchema, SignUpSchema } from "./types";
-import { addUser, changeUserPassword, getUserByEmail } from "./controller";
+import { ChangePasswordSchema, CustomJwtPayload, LoginSchema, SignUpSchema, SignUpTokenInput, SignUpTokenSchema } from "./types";
+import { addUser, addUserSignUpToken, changeUserPassword, getUserByEmail } from "./controller";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
@@ -29,6 +29,31 @@ const sendEmailRegistration = async (registrationEmail: string, verificationToke
     subject: 'Verifikasi Alamat Email Anda',
     textContent: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
     htmlContent: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
+  };
+
+  try {
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('Verification email sent successfully:', response);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+  }
+};
+
+const sendSignUpLink = async (
+  registrationEmail: string,
+  params: string | string[][] | Record<string, string> | URLSearchParams | undefined
+) => {
+  const queryParams = new URLSearchParams(params).toString();
+  const verificationUrl = `https://merchant-app-fe.vercel.app/login-google?${queryParams}`;
+
+  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+  const sendSmtpEmail = {
+    sender: { name: 'cucibayargo', email: 'laundryapps225@gmail.com' }, // Update with your sender email
+    to: [{ email: registrationEmail }],
+    subject: 'Link Pendaftaran Cucibayargo', // Updated subject
+    textContent: `Silakan klik link untuk melakukan pendaftaran: ${verificationUrl}`,
+    htmlContent: `<p>Silakan klik link untuk melakukan pendaftaran: <a href="${verificationUrl}">Daftar Sekarang</a></p>`,
   };
 
   try {
@@ -312,6 +337,100 @@ router.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Terjadi kesalahan pada server." });
   }
 });
+
+/**
+ * @swagger
+ * /auth/signup/token:
+ *   post:
+ *     summary: Generate a signup link and send to the user's email
+ *     description: Validates the user's input and checks if the email is already in use. If valid, creates a signup link and sends it to the user's email.
+ *     tags: [Auth]  
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone_number
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The user's full name
+ *                 example: John Doe
+ *               email:
+ *                 type: string
+ *                 description: The user's email address
+ *                 example: johndoe@example.com
+ *               phone_number:
+ *                 type: string
+ *                 description: The user's phone number
+ *                 example: +1234567890
+ *     responses:
+ *       201:
+ *         description: Signup link has been created and sent to the user's email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Link pendaftaran telah dibuat. Silahkan cek email anda untuk melanjutkan.
+ *       400:
+ *         description: Invalid input or email already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Email sudah digunakan.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Terjadi kesalahan pada server.
+ */
+router.post("/signup/token",  async (req, res) => {
+  const { error } = SignUpTokenSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  const { name, email, phone_number } = req.body;
+  try {
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: "Email sudah digunakan." });
+    }
+
+    // Generate signup token
+    const signupToken = jwt.sign({ id: email }, "signup_secret_key", {
+      expiresIn: "1d",
+    });
+
+    const userDetail = {name, email, phone_number, token: signupToken};
+    // Save the signup token and user details in the database
+    await addUserSignUpToken(userDetail);
+
+    // Send the signup email with the generated token
+    await sendSignUpLink(email, { token: signupToken });
+
+    res.status(201).json({ message: "Link pendaftaran telah dibuat. Silahkan cek email anda untuk melanjutkan."});
+  } catch (err: any) {
+    res.status(500).json({ message: "Terjadi kesalahan pada server." });
+  }
+})
+
 
 /**
  * @swagger

@@ -198,6 +198,97 @@
         }
       }
     },
+    "/auth/signup/token": {
+      "post": {
+        "summary": "Generate a signup link and send to the user's email",
+        "description": "Validates the user's input and checks if the email is already in use. If valid, creates a signup link and sends it to the user's email.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "phone_number"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The user's full name",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "The user's email address",
+                    "example": "johndoe@example.com"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "description": "The user's phone number",
+                    "example": 1234567890
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Signup link has been created and sent to the user's email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Link pendaftaran telah dibuat. Silahkan cek email anda untuk melanjutkan."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or email already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email sudah digunakan."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Terjadi kesalahan pada server."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/change-password": {
       "post": {
         "summary": "Changes the user's password",
@@ -539,7 +630,7 @@
           },
           {
             "in": "query",
-            "name": "hasSerivce",
+            "name": "hasService",
             "schema": {
               "type": "string"
             },

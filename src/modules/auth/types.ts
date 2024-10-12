@@ -63,6 +63,12 @@ export const SignUpSchema = Joi.object({
             'string.empty': 'Password harus diisi.',
             'any.required': 'Password harus diisi.'
         }),
+    token: Joi.string()
+        .required()
+        .messages({
+            'string.empty': 'Token harus diisi.',
+            'any.required': 'Token harus diisi.'
+        }),
     name: Joi.string()
         .min(1)
         .max(255)

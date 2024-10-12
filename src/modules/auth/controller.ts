@@ -75,11 +75,42 @@ export async function addUserSignUpToken(payload: Omit<SignUpTokenInput, 'id'>):
   try {
     const { name, email, phone_number, token, status} = payload;
     const query = `
-      INSERT INTO users (name, email, phone_number, token, status)
+      INSERT INTO users_signup (name, email, phone_number, token, status)
       VALUES ($1, $2, $3, $4, $5);
     `;
     const values = [name, email, phone_number, token, status];
     await client.query(query, values);
+  } finally {
+    client.release();
+  }
+}
+
+export async function validateToken(email: string, token: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT token 
+      FROM users_signup 
+      WHERE email = $1 AND token = $2;
+    `;
+    const result = await client.query(query, [email, token]);
+
+    // Check if any rows were returned
+    return result.rows.length > 0;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateUserSignupStatus(email: string, token: string, userId: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      UPDATE users_signup
+      SET status = 'signed', user_id = $1
+      WHERE email = $2 AND token = $3;
+    `;
+    await client.query(query, [userId, email, token]);
   } finally {
     client.release();
   }

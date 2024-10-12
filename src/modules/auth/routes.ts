@@ -1,11 +1,12 @@
 import express from "express";
 import { ChangePasswordSchema, CustomJwtPayload, LoginSchema, SignUpSchema, SignUpTokenInput, SignUpTokenSchema } from "./types";
-import { addUser, addUserSignUpToken, changeUserPassword, getUserByEmail } from "./controller";
+import { addUser, addUserSignUpToken, changeUserPassword, getUserByEmail, updateUserSignupStatus, validateToken } from "./controller";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import passport from "./passportConfig";
 import { getUserDetails, updateUserDetails } from "../user/controller";
 import * as dotenv from 'dotenv';
+import crypto from 'crypto';
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
@@ -47,6 +48,9 @@ const sendSignUpLink = async (
   const verificationUrl = `https://merchant-app-fe.vercel.app/login-google?${queryParams}`;
 
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+  console.log(verificationUrl);
+  
 
   const sendSmtpEmail = {
     sender: { name: 'cucibayargo', email: 'laundryapps225@gmail.com' }, // Update with your sender email
@@ -271,6 +275,9 @@ router.post("/logout", async (req, res) => {
  *               name:
  *                 type: string
  *                 description: User's name
+ *               token:
+ *                 type: string
+ *                 description: Unique Signup Token
  *               password:
  *                 type: string
  *                 description: User's password
@@ -307,12 +314,18 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
 
-  const { name, email, password, phone_number } = req.body;
+  const { name, email, password, phone_number, token} = req.body;
 
   try {
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ message: "Email sudah digunakan." });
+    }
+
+    // Step 2: Validate the token by checking if it matches the one in the database
+    const isValidToken = await validateToken(email, token);
+    if (!isValidToken) {
+      return res.status(400).json({ message: "Invalid or expired token." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -323,6 +336,11 @@ router.post("/signup", async (req, res) => {
       phone_number,
       status: 'pending', // Initially set user status to 'pending'
     });
+
+
+    // Step 4: Update users_signup table with the status and user_id
+    await updateUserSignupStatus(email, token, newUser.id);
+
 
     // Generate verification token
     const verificationToken = jwt.sign({ id: newUser.id }, "verification_secret_key", {
@@ -413,17 +431,16 @@ router.post("/signup/token",  async (req, res) => {
       return res.status(400).json({ message: "Email sudah digunakan." });
     }
 
-    // Generate signup token
-    const signupToken = jwt.sign({ id: email }, "signup_secret_key", {
-      expiresIn: "1d",
-    });
+    // Generate a unique token using SHA256 hash
+    const signupToken = crypto.createHash('sha256').update(email + Date.now().toString()).digest('hex');
 
-    const userDetail = {name, email, phone_number, token: signupToken};
+    const userDetail = { name, email, phone_number, token: signupToken };
+
     // Save the signup token and user details in the database
     await addUserSignUpToken(userDetail);
 
     // Send the signup email with the generated token
-    await sendSignUpLink(email, { token: signupToken });
+    await sendSignUpLink(email, { token: signupToken, email, phone_number, name });
 
     res.status(201).json({ message: "Link pendaftaran telah dibuat. Silahkan cek email anda untuk melanjutkan."});
   } catch (err: any) {

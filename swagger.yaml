@@ -147,6 +147,10 @@
                     "type": "string",
                     "description": "User's name"
                   },
+                  "token": {
+                    "type": "string",
+                    "description": "Unique Signup Token"
+                  },
                   "password": {
                     "type": "string",
                     "description": "User's password"

@@ -143,11 +143,10 @@ router.put("/", async (req: AuthenticatedRequest, res) => {
       });
     } else {
       // Create a new note
-      const newNote = await addNote({ notes }, req.userId);
+      await addNote({ notes }, req.userId);
       res.status(201).json({
         status: "success",
-        message: "Catatan berhasil dibuat",
-        data: newNote,
+        message: "Catatan berhasil dibuat"
       });
     }
   } catch (error) {

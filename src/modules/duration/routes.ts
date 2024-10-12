@@ -161,8 +161,8 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
 
   const { id, name, duration, type } = req.body;
   try {
-    const newDuration = await addDuration({ name, duration, type }, req.userId);
-    res.status(201).json({ status: 'success', message: 'Durasi berhasil', data: newDuration });
+    await addDuration({ name, duration, type }, req.userId);
+    res.status(201).json({ status: 'success', message: 'Durasi berhasil' });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
@@ -229,8 +229,8 @@ router.put('/:id', async (req, res) => {
   const { id, name, duration, type } = req.body;
   const durationId = req.params.id;
   try {
-    const updatedDuration = await updateDuration(durationId, { name, duration, type });
-    res.json({ status: 'success', message: 'Durasi berhasil diperbarui', data: updatedDuration });
+    await updateDuration(durationId, { name, duration, type });
+    res.json({ status: 'success', message: 'Durasi berhasil diperbarui'});
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('not found')) {

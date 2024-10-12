@@ -223,11 +223,10 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
   }
 
   try {
-    const newService = await addService(req.body, req.userId);
+    await addService(req.body, req.userId);
     res.status(201).json({
       status: 'success',
-      message: 'Layanan berhasil dibuat',
-      data: newService
+      message: 'Layanan berhasil dibuat'
     });
   } catch (error) {
     console.log(error);
@@ -274,11 +273,10 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updatedService = await updateService(req.params.id, req.body);
+    await updateService(req.params.id, req.body);
     res.json({
       status: 'success',
-      message: 'Layanan berhasil diubah',
-      data: updatedService
+      message: 'Layanan berhasil diubah'
     });
   } catch (error) {
     res.status(404).json({ message: 'Layanan tidak ditemukan' });

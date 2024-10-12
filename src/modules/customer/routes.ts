@@ -189,11 +189,10 @@ router.post("/", (req: AuthenticatedRequest, res: Response) => {
   const { name, phone_number, email, address, gender } = req.body;
   
   addCustomer({ name, phone_number, email, address, gender }, req.userId ?? "")
-    .then((newCustomer) =>
+    .then(() =>
       res.status(201).json({
         status: "success",
-        message: "Customer created successfully",
-        data: newCustomer
+        message: "Customer created successfully"
       })
     )
     .catch((error) => {
@@ -291,11 +290,10 @@ router.put("/:id", (req: Request, res: Response) => {
   const { name, phone_number, email, address, gender } = req.body;
 
   updateCustomer(id, { name, phone_number, email, address, gender })
-    .then((updatedCustomer) =>
+    .then(() =>
       res.status(200).json({
         status: "success",
-        message: "Customer updated successfully",
-        data: updatedCustomer
+        message: "Customer updated successfully"
       })
     )
     .catch((error) => {

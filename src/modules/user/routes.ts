@@ -3,7 +3,6 @@ import multer from "multer";
 import {
   getUserDetails,
   updateUserDetails,
-  updateUserProfile,
 } from "./controller"; // Assuming you have this function
 import supabase from "../../database/supabase";
 import { AuthenticatedRequest } from "src/middlewares";

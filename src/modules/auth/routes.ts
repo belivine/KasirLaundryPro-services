@@ -45,7 +45,7 @@ const sendSignUpLink = async (
   params: string | string[][] | Record<string, string> | URLSearchParams | undefined
 ) => {
   const queryParams = new URLSearchParams(params).toString();
-  const verificationUrl = `https://merchant-app-fe.vercel.app/login-google?${queryParams}`;
+  const verificationUrl = `https://merchant-app-fe.vercel.app/register?${queryParams}`;
 
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 

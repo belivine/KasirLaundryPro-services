@@ -25,11 +25,40 @@ const sendEmailRegistration = async (registrationEmail: string, verificationToke
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
   const sendSmtpEmail = {
-    sender: { name: 'cucibayargo', email: 'laundryapps225@gmail.com' }, // Update with your sender email
+    sender: { name: 'Cucibayargo', email: 'laundryapps225@gmail.com' },
     to: [{ email: registrationEmail }],
     subject: 'Verifikasi Alamat Email Anda',
     textContent: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
-    htmlContent: `<p>Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: <a href="${verificationUrl}">Verifikasi Email</a></p>`,
+    htmlContent: `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+          <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #f4f4f4; padding: 40px 0;">
+            <tr>
+              <td>
+                <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                  <tr>
+                    <td style="text-align: center;">
+                      <img src="https://merchant-app-fe.vercel.app/assets/logo-B3sUIac6.png" alt="Cucibayargo" style="width: 150px; margin-bottom: 20px;" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: center; padding: 20px;">
+                      <h1 style="color: #333333;">Verifikasi Alamat Email Anda</h1>
+                      <p style="font-size: 16px; color: #555555;">Silakan verifikasi alamat email Anda dengan mengklik tautan di bawah ini.</p>
+                      <a href="${verificationUrl}" style="background-color: #007bff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block; margin-top: 20px;">Verifikasi Email</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px; text-align: center; color: #999999; font-size: 12px;">
+                      Jika Anda tidak mendaftarkan email ini, abaikan email ini.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`,
   };
 
   try {
@@ -49,15 +78,41 @@ const sendSignUpLink = async (
 
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-  console.log(verificationUrl);
-  
-
   const sendSmtpEmail = {
-    sender: { name: 'cucibayargo', email: 'laundryapps225@gmail.com' }, // Update with your sender email
+    sender: { name: 'Cucibayargo', email: 'laundryapps225@gmail.com' },
     to: [{ email: registrationEmail }],
-    subject: 'Link Pendaftaran Cucibayargo', // Updated subject
+    subject: 'Link Pendaftaran Cucibayargo',
     textContent: `Silakan klik link untuk melakukan pendaftaran: ${verificationUrl}`,
-    htmlContent: `<p>Silakan klik link untuk melakukan pendaftaran: <a href="${verificationUrl}">Daftar Sekarang</a></p>`,
+    htmlContent: `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+          <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #f4f4f4; padding: 40px 0;">
+            <tr>
+              <td>
+                <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                  <tr>
+                    <td style="text-align: center;">
+                      <img src="https://merchant-app-fe.vercel.app/assets/logo-B3sUIac6.png" alt="Cucibayargo" style="width: 150px; margin-bottom: 20px;" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: center; padding: 20px;">
+                      <h1 style="color: #333333;">Selamat Datang di Cucibayargo!</h1>
+                      <p style="font-size: 16px; color: #555555;">Terima kasih telah mendaftar. Silakan klik tombol di bawah ini untuk melanjutkan pendaftaran Anda.</p>
+                      <a href="${verificationUrl}" style="background-color: #007bff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block; margin-top: 20px;">Daftar Sekarang</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px; text-align: center; color: #999999; font-size: 12px;">
+                      Jika Anda tidak mendaftar di Cucibayargo, abaikan email ini.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`,
   };
 
   try {

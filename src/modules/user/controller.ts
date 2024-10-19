@@ -1,6 +1,8 @@
 import { PoolClient } from "pg";
 import pool from "../../database/postgres";
 import { User, UserDetail } from "../auth/types";
+import supabase from "../../database/supabase";
+import cron from 'node-cron';
 
 /**
  * Update the user's profile with the logo URL.
@@ -114,3 +116,31 @@ export async function updateUserDetails(
     client.release();
   }
 }
+
+async function deleteTempFiles() {
+  try {
+    const { data, error } = await supabase.storage
+      .from('logos') // Bucket name
+      .list('temp', { limit: 1000 });
+
+    if (error) {
+      console.error('Error fetching temp folder files:', error.message);
+      return;
+    }
+
+    if (data?.length) {
+      const deletePromises = data.map((file) =>
+        supabase.storage.from('logos').remove([`temp/${file.name}`])
+      );
+      await Promise.all(deletePromises);
+      console.log('All files deleted from temp folder');
+    } else {
+      console.log('No files in temp folder to delete');
+    }
+  } catch (error) {
+    console.error('Error deleting files:', error);
+  }
+}
+
+// Schedule to run at 19:16 every day
+cron.schedule('30 19 * * *', deleteTempFiles);

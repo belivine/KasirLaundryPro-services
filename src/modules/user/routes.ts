@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import multer from "multer";
 import {
+  deleteTempFiles,
   getUserDetails,
   updateUserDetails,
 } from "./controller"; // Assuming you have this function
@@ -289,5 +290,47 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Terjadi kesalahan server.'});
   }
 });
+
+/**
+ * @swagger
+ * /user/delete-temp-files:
+ *   get:
+ *     summary: Delete temporary files
+ *     description: Deletes all files in the temporary storage folder. Requires a valid secret token in the request header.
+ *     tags: [User]
+ *     parameters:
+ *       - in: header
+ *         name: cron-job-token
+ *         required: true
+ *         description: The secret token required to authorize the request.
+ *         schema:
+ *           type: string
+ *           example: "d5f811"
+ *     responses:
+ *       '200':
+ *         description: Files deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Files already deleted"
+ *       '403':
+ *         description: Forbidden Invalid token
+ *       '500':
+ *         description: Error deleting files
+ */
+router.get("/delete-temp-files", async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    await deleteTempFiles();
+    res.status(200).json({ message: "Files already deleted" });
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 export default router;

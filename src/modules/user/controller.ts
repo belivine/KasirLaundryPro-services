@@ -117,7 +117,7 @@ export async function updateUserDetails(
   }
 }
 
-async function deleteTempFiles() {
+export async function deleteTempFiles() {
   const currentDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
   console.log(`Cron job started at ${currentDate}`);
   try {
@@ -143,9 +143,3 @@ async function deleteTempFiles() {
     console.error('Error deleting files:', error);
   }
 }
-
-// Schedule to run at 19:16 every day
-cron.schedule('* * * * *', deleteTempFiles);  // Runs every minute for testing
-
-const currentDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-console.log(`Cron job started at ${currentDate}`);

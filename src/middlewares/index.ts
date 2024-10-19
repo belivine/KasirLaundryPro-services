@@ -12,6 +12,16 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   }
 
   const token = req.cookies.auth_token || req.headers['authorization'];
+  const crToken = req.headers['cron-job-token'];
+  const crPrivateToken = process.env.crToken;
+  
+  if (req.path.startsWith('/api/user/delete-temp-files')) {
+    if (crToken == crPrivateToken) {
+      return next();
+    } else {
+      return res.status(401).json({ message: 'Akses ditolak. Token tidak sesuai' });
+    }
+  } 
 
   if (!token) {
     return res.status(401).json({ message: 'Akses ditolak. Token tidak sesuai' });

@@ -118,6 +118,8 @@ export async function updateUserDetails(
 }
 
 async function deleteTempFiles() {
+  const currentDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+  console.log(`Cron job started at ${currentDate}`);
   try {
     const { data, error } = await supabase.storage
       .from('logos') // Bucket name
@@ -143,4 +145,7 @@ async function deleteTempFiles() {
 }
 
 // Schedule to run at 19:16 every day
-cron.schedule('30 19 * * *', deleteTempFiles);
+cron.schedule('* * * * *', deleteTempFiles);  // Runs every minute for testing
+
+const currentDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+console.log(`Cron job started at ${currentDate}`);

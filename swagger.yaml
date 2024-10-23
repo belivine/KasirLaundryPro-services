@@ -1524,6 +1524,51 @@
           }
         }
       }
+    },
+    "/user/delete-temp-files": {
+      "get": {
+        "summary": "Delete temporary files",
+        "description": "Deletes all files in the temporary storage folder. Requires a valid secret token in the request header.",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "cron-job-token",
+            "required": true,
+            "description": "The secret token required to authorize the request.",
+            "schema": {
+              "type": "string",
+              "example": "d5f811"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Files already deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden Invalid token"
+          },
+          "500": {
+            "description": "Error deleting files"
+          }
+        }
+      }
     }
   },
   "components": {

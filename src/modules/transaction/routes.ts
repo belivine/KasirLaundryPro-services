@@ -411,6 +411,7 @@ router.put("/:invoiceId", async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Gagal membuat layanan" });
   }
 });

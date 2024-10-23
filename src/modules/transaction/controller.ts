@@ -100,9 +100,6 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>, merch
     const customerDetail = await getCustomerById(customer);
     const durationDetail = await getDurationById(duration);
 
-    console.log(customerDetail);
-    console.log(durationDetail);
-    
     const query = `
       INSERT INTO new_transaction (
         customer_id, 
@@ -214,7 +211,7 @@ async function getInvoiceTotalPrice(transactionId: string): Promise<{total: numb
  * @param invoiceId - The invoice ID of the transaction to update.
  * @returns A Promise resolving to the updated Transaction object.
  */
-export async function updateTransaction(status: string, invoiceId: string): Promise<Transaction> {
+export async function updateTransaction(status: string, invoiceId: string): Promise<TransactionDetails> {
   const client = await pool.connect();
   try {
     const query = `
@@ -241,8 +238,8 @@ export async function updateTransaction(status: string, invoiceId: string): Prom
     const values = [status, invoiceId];
     
     const result = await client.query(query, values);
-  
-    return result.rows[0];
+    const transactionDetail = getTransactionByTransactionId(result.rows[0].id);
+    return transactionDetail;
   } finally {
     client.release(); 
   }
@@ -291,6 +288,32 @@ export async function getTransactionById(invoiceId: string): Promise<Transaction
     }
 
     return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Retrieve details of a specific transaction by its ID.
+ * @param {string} invoiceId - The ID of the transaction to retrieve.
+ * @returns {Promise<TransactionDetails | null>} - Transaction details or null if not found.
+ */
+export async function getTransactionByTransactionId(invoiceId: string): Promise<TransactionDetails> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+        new_transaction.id AS transaction_id,
+        new_transaction.customer_id,
+        new_transaction.customer_name,
+        new_transaction.customer_phone_number,
+        p.invoice_id AS invoice
+      FROM new_transaction
+      LEFT JOIN new_payment p ON new_transaction.id = p.transaction_id
+      WHERE new_transaction.id = $1
+    `;
+    const { rows } = await client.query(query, [invoiceId]);
+    return rows.length ? rows[0] : null;
   } finally {
     client.release();
   }

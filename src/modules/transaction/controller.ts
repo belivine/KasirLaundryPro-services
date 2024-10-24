@@ -308,7 +308,7 @@ export async function getTransactionByTransactionId(invoiceId: string): Promise<
         new_transaction.customer_name,
         new_transaction.customer_phone_number,
         p.invoice_id AS invoice,
-        t.status
+        new_transaction.status
       FROM new_transaction
       LEFT JOIN new_payment p ON new_transaction.id = p.transaction_id
       WHERE new_transaction.id = $1

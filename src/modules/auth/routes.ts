@@ -32,7 +32,7 @@ const sendEmailRegistration = async (registrationEmail: string, verificationToke
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
   const sendSmtpEmail = {
-    sender: { name: 'Support', email: 'no-reply@mail.cucibayargo.com' },
+    sender: { name: 'Cucibayargo', email: 'no-reply@mail.cucibayargo.com' },
     to: [{ email: registrationEmail }],
     subject: 'Verifikasi Alamat Email Anda',
     textContent: `Silakan verifikasi alamat email Anda dengan mengklik tautan berikut: ${verificationUrl}`,
@@ -86,7 +86,7 @@ const sendSignUpLink = async (
   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
   const sendSmtpEmail = {
-    sender: { name: 'Support', email: 'no-reply@mail.cucibayargo.com' },
+    sender: { name: 'Cucibayargo', email: 'no-reply@mail.cucibayargo.com' },
     to: [{ email: registrationEmail }],
     subject: 'Link Pendaftaran Cucibayargo',
     textContent: `Silakan klik link untuk melakukan pendaftaran: ${verificationUrl}`,

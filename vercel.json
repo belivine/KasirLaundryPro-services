@@ -1,1 +1,14 @@
-{ "version": 2, "rewrites": [{ "source": "/(.*)", "destination": "/api" }] }
+{
+    "version": 2,
+    "rewrites": [
+      {
+        "source": "/loaderio-2a4336f1dcf61400f41c0ce1bf9391b3.txt",
+        "destination": "/loaderio-2a4336f1dcf61400f41c0ce1bf9391b3.txt"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/api/$1"
+      }
+    ]
+  }
+  
